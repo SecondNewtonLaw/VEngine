@@ -1,0 +1,50 @@
+{
+  "name": "V8Engine",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "EngineShared": {
+        "$path": "src/EngineRuntime/Shared"
+      },
+      "ClientCore": {
+        "$path": "src/Game/Client/"
+      }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "EngineRuntime": {
+        "$path": "src/EngineRuntime/Server"
+      }
+    },
+    "ServerStorage": {
+      "$className": "ServerStorage",
+      "GameCore": {
+        "$path": "src/Game/Server"
+      }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "EngineRuntime": {
+          "$path": "src/EngineRuntime/Client"
+        }
+      }
+    },
+    "ReplicatedFirst": {
+      "$className": "ReplicatedFirst",
+      "EngineRunner": {
+        "$path": "src/EngineRuntime/Client/ReplicatedFirst"
+      },
+      "Preinit": {
+        "$path": "src/Game/ReplicatedFirst"
+      }
+    },
+    "SoundService": {
+      "$properties": {
+        "RespectFilteringEnabled": true
+      }
+    }
+  }
+}
