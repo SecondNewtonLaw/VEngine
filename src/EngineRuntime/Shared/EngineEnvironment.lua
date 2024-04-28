@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local envManager = {}
 
-print("[V8Engine::EngineEnvironmentManager] Initializing Environment Manager...")
+print("[VEngine::EngineEnvironmentManager] Initializing Environment Manager...")
 
 local EngineUtilities = require(ReplicatedStorage:WaitForChild("EngineShared"):WaitForChild("EngineUtilities"))
 

@@ -16,7 +16,7 @@ function logger.new(loggerName: string, studioOnly: boolean, stackTraceDepth: nu
 	end
 
 	if typeof(loggerName) ~= "string" then
-		(critical or error)("[CRITICAL/Logger::new] Cannot initialize. Logger name is not a string!")
+		(critical or error)("[CRITICAL/VEngine::Logger::new] Cannot initialize. Logger name is not a string!")
 	end
 
 	--- @class Logger

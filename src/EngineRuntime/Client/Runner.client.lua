@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LoggerModule = require(ReplicatedStorage:WaitForChild("EngineShared"):WaitForChild("Logger"))
-local logger = LoggerModule.new("V8Engine::ClientRunner", true, 2)
+local logger = LoggerModule.new("VEngine::ClientRunner", true, 2)
 
 logger:PrintInformation("Waiting for all client scripts...")
 local scripts = ReplicatedStorage:WaitForChild("ClientCore")

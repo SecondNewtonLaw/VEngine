@@ -1,6 +1,6 @@
 local oPrint = print
 local function print(str, ...)
-	oPrint("[V8Engine::ReplicatedFirst] " .. (#{ ... } == 0 and str or string.format(str, ...)))
+	oPrint("[VEngine::ReplicatedFirst] " .. (#{ ... } == 0 and str or string.format(str, ...)))
 end
 
 print("Waiting for scripts...")
