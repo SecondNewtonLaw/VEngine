@@ -6,26 +6,39 @@ print("[VEngine::EngineEnvironmentManager] Initializing Environment Manager...")
 local EngineUtilities = require(ReplicatedStorage:WaitForChild("EngineShared"):WaitForChild("EngineUtilities"))
 
 local function ConstructEngineEnvironment(baseEnvironment: table)
-	--- @class EngineEnvironment
+	--- Table containing all the environment of VEngine.
 	local nEnv = EngineUtilities.DeepClone(baseEnvironment)
 
-	--- Red Networking library
+	--- The Red networking library.
 	nEnv["RedNetworking"] = require(ReplicatedStorage:WaitForChild("ThirdPartyShared"):WaitForChild("Red"))
+
+	--- Factory for EventOptions (Part of Red Networking)
 	nEnv["EventOptions"] = {
+		---	Construct a EventOptions structure.
+		--- @param eventName string The name of the event.
+		--- @param unreliable boolean Whether or not its mode is set to unreliable.
+		--- @return table eventOptions Instance of EventOptions
 		new = function(eventName: string, unreliable: boolean?): EventOptions
 			return { Name = eventName, Unreliable = unreliable }
 		end,
 	}
+
+	--- Factory for SharedEventOptions (Part of Red Networking)
 	nEnv["SharedEventOptions"] = {
+		---	Construct a SharedEventOptions structure.
+		--- @param eventName string The name of the event.
+		--- @param unreliable boolean Whether or not its mode is set to unreliable.
+		--- @return table sharedEventOptions Instance of SharedEventOptions
 		new = function(eventName: string, unreliable: boolean?): SharedEventOptions
 			return { Name = eventName, Unreliable = unreliable }
 		end,
 	}
+
 	return nEnv
 end
 
 function envManager.GetEngineGlobals()
-	return ConstructEngineEnvironment({})
+	return table.freeze(ConstructEngineEnvironment({}))
 end
 
 function envManager.ModifyEnvironment(func: () -> ())
@@ -35,4 +48,4 @@ function envManager.ModifyEnvironment(func: () -> ())
 	setfenv(func, ConstructEngineEnvironment(getfenv(func)))
 end
 
-return envManager
+return table.freeze(envManager)

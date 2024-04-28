@@ -1,7 +1,9 @@
-local m = {}
+local module = require(game:GetService("ReplicatedStorage"):WaitForChild("EngineShared"):WaitForChild("EngineModule"))
 
-function m:Initialize(engineEnv: EngineEnvironment)
-	engineEnv.RedNetworking.Event(engineEnv.EventOptions.new("Hello", false), function() end)
+module.ModuleName = "Hello, World!"
+
+function module:Initialize(environmentManager: EngineEnvironmentManager)
+	local env = environmentManager.GetEngineGlobals()
 end
 
-return m
+return module

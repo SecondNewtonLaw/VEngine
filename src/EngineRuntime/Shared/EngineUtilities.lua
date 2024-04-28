@@ -1,21 +1,21 @@
-local m = {}
+local module = {}
 
-function m.DeepClone(t: table)
+function module.DeepClone(t: table)
 	if typeof(t) ~= "table" then
-		return { [1] = t }
+		return {}
 	end
 
-	local c = {}
+	local nTable = {}
 
-	for i, v in t do
-		if typeof(v) == "table" then
-			c[i] = m.DeepClone(v)
+	for idx, member in t do
+		if typeof(member) == "table" then
+			nTable[idx] = module.DeepClone(member)
 		else
-			c[i] = v
+			nTable[idx] = member
 		end
 	end
 
-	return c
+	return nTable
 end
 
-return m
+return module
