@@ -1,8 +1,11 @@
 {
     "robloxLsp.diagnostics.globals": [
-        "critical"
+        "critical",
+        "RedNetworking"
     ],
     "robloxLsp.workspace.library": [
-        "./EngineTypedefinitions"
+        "./EngineTypeDefinitions",
+        "./CustomTypeDefinitions",
+        "./Packages"
     ]
 }

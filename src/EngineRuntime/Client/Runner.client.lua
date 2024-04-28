@@ -1,4 +1,3 @@
-local PlayersService = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LoggerModule = require(ReplicatedStorage:WaitForChild("EngineShared"):WaitForChild("Logger"))
@@ -58,5 +57,5 @@ for _, moduleScript in scripts:GetChildren() do
 end
 
 if moduleCount ~= initializedModules then
-    logger:PrintError("Some engine modules failed to initialize correctly...")
+	logger:PrintError("Some engine modules failed to initialize correctly...")
 end

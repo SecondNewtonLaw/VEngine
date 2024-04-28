@@ -9,6 +9,9 @@
       },
       "ClientCore": {
         "$path": "src/Game/Client/"
+      },
+      "ThirdPartyShared": {
+        "$path": "Packages"
       }
     },
     "ServerScriptService": {

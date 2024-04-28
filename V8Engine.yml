@@ -2,6 +2,8 @@
 #   See: https://kampfkarren.github.io/selene/usage/std.html for more information.
 #   Some of this functions here only apply on SOME cases.
 globals:
+  RedNetworking:  # Only when the V8Engine environment is loaded into a function.
+    any: true
   critical:  # Only when the environment is polluted by Logger
     args:
       - type: any
