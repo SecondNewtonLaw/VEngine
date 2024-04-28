@@ -3,10 +3,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LoggerModule = require(ReplicatedStorage:WaitForChild("EngineShared"):WaitForChild("Logger"))
 local logger = LoggerModule.new("VEngine::ClientRunner", true, 2)
 
-logger:PrintInformation("Waiting for all client scripts...")
+logger:PrintInformation("Waiting for all client scripts and VEngine components...")
 local scripts = ReplicatedStorage:WaitForChild("ClientCore")
 local engineShared = ReplicatedStorage:WaitForChild("EngineShared")
-local engineRequire = require(engineShared.EngineRequire)
+local engineRequire = require(engineShared:WaitForChild("EngineRequire"))
+local engineEnvironmentManager = require(engineShared:WaitForChild("EngineEnvironment"))
 
 logger:PrintInformation("Executing init scripts:")
 for _, moduleScript in scripts:GetChildren() do
@@ -39,15 +40,19 @@ for _, moduleScript in scripts:GetChildren() do
 		)
 
 		local _, msg = pcall(function()
-			m:Initialize()
+			local l = LoggerModule.new(string.format("VEngine::Implementation::'%s'", m.ModuleName), true, 4)
+			l:PolluteEnvironment(m.Initialize)
+			m:Initialize(engineEnvironmentManager) -- Env table cannot be modified either way; it is frozen.
+			l:RestoreEnvironment(m.Initialize)
 		end)
 
 		if msg then
 			logger:PrintError(
 				string.format(
-					"Failed to initialize V8Engine module '%s' (Module: Client/%s)",
+					"Failed to initialize VEngine module '%s' (Module: Client/%s);\nError: %s",
 					m.ModuleName,
-					moduleScript.Name
+					moduleScript.Name,
+					msg
 				)
 			)
 		else

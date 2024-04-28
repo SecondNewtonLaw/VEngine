@@ -34,7 +34,7 @@ function logger.new(loggerName: string, studioOnly: boolean, stackTraceDepth: nu
 	--- || Note: This is not ideal, and other scripts intending to, for example, error, will not end execution. Please consider not doing this when using foreign code not aware of this convention.
 	--- If you wish to restore the polluted environment, use Logger:RestoreEnvironment, which will restore the environment to the one you had the last time you called Logger:RestoreEnvironment.
 	--- @param self Logger
-	function _self:PolluteEnvironment()
+	function _self:PolluteEnvironment(f: number | () -> ())
 		-- Deep clone.
 		local function deepClone(t)
 			if typeof(t) ~= "table" then
@@ -53,7 +53,7 @@ function logger.new(loggerName: string, studioOnly: boolean, stackTraceDepth: nu
 
 			return c
 		end
-		__clean = deepClone(getfenv(2))
+		__clean = deepClone(getfenv(f))
 		local nEnv = deepClone(__clean)
 
 		-- Replace print, warn and error with proxies.
@@ -70,13 +70,13 @@ function logger.new(loggerName: string, studioOnly: boolean, stackTraceDepth: nu
 		nEnv.critical = function(msg)
 			return self:PrintCritical(msg)
 		end
-		setfenv(2, nEnv)
+		setfenv(f, nEnv)
 	end
 
 	--- Restores a polluted environment.
 	--- @param self Logger
-	function _self:RestoreEnvironment()
-		setfenv(2, __clean)
+	function _self:RestoreEnvironment(f: number | () -> ())
+		setfenv(f, __clean)
 	end
 
 	--- Emits a print into the console. Labeled as an Information level print.
@@ -121,7 +121,5 @@ function logger.new(loggerName: string, studioOnly: boolean, stackTraceDepth: nu
 
 	return table.freeze(_self) -- Freeze.
 end
-
-
 
 return logger
