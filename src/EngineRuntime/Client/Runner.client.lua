@@ -40,7 +40,7 @@ for _, moduleScript in scripts:GetChildren() do
 		)
 
 		local _, msg = pcall(function()
-			local l = LoggerModule.new(string.format("VEngine::Implementation::'%s'", m.ModuleName), true, 4)
+			local l = LoggerModule.new(string.format("VEngine::Implementation::Client::'%s'", m.ModuleName), true, 4)
 			l:PolluteEnvironment(m.Initialize)
 			m:Initialize(engineEnvironmentManager) -- Env table cannot be modified either way; it is frozen.
 			l:RestoreEnvironment(m.Initialize)
