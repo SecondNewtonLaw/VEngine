@@ -3,20 +3,21 @@
 	typeof(require(...)) to avoid having to come here EVERY time to update the types when you write them, unless something makes you make them static, you are advised to avoid doing so.
 ]]
 
-export type BaseEngineModule = {
-	ModuleName: string,
+export type BaseEngineModule = typeof(require(
+	game:GetService("ReplicatedStorage"):WaitForChild("EngineShared"):WaitForChild("EngineModule").new()
+))
 
-	Initialize: (self: BaseEngineModule) -> (),
-}
-
-export type EngineUtilities = {
-	---	Deep clones a table and returns it.
-	DeepClone: (t: table) -> table,
-}
+export type EngineUtilities = typeof(require(
+	game:GetService("ReplicatedStorage")
+		:WaitForChild("EngineShared")
+		:WaitForChild("EngineEnvironment")
+		:WaitForChild("EngineUtilities")
+))
 
 export type EngineEnvironmentManager = typeof(require(
 	game:GetService("ReplicatedStorage"):WaitForChild("EngineShared"):WaitForChild("EngineEnvironment")
 ))
+
 export type EngineEnvironment = typeof(require(
 	game:GetService("ReplicatedStorage")
 		:WaitForChild("EngineShared")
@@ -24,6 +25,7 @@ export type EngineEnvironment = typeof(require(
 		.GetEngineGlobals()
 ))
 
-export type Logger = typeof(require(
-	game:GetService("ReplicatedStorage"):WaitForChild("EngineShared"):WaitForChild("Logger")
-))
+local loggerModule = require(game:GetService("ReplicatedStorage"):WaitForChild("EngineShared"):WaitForChild("Logger"))
+
+export type LoggerConstructor = typeof(loggerModule)
+export type Logger = typeof(loggerModule.new(nil, nil, nil))
