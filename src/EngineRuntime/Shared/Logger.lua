@@ -3,6 +3,8 @@
 ]]
 
 local RunService = game:GetService("RunService")
+local engineEnvironmentManager =
+	require(game:GetService("ReplicatedStorage"):WaitForChild("EngineShared"):WaitForChild("EngineEnvironment"))
 local logger = {}
 
 --- Construct a Logger.
@@ -28,55 +30,45 @@ function logger.new(loggerName: string, studioOnly: boolean, stackTraceDepth: nu
 		--- The depth of the stack trace on errors when printing Critical error messages.
 		StackTraceDepth = stackTraceDepth,
 	}
-	local __clean = {}
 
 	--- Will modify the environment of the caller, replacing the standard print, warn and error functions with the ones belonging to the logger.
 	--- || Note: This is not ideal, and other scripts intending to, for example, error, will not end execution. Please consider not doing this when using foreign code not aware of this convention.
 	--- If you wish to restore the polluted environment, use Logger:RestoreEnvironment, which will restore the environment to the one you had the last time you called Logger:RestoreEnvironment.
 	--- @param self Logger
 	function _self:PolluteEnvironment(f: number | () -> ())
-		-- Deep clone.
-		local function deepClone(t)
-			if typeof(t) ~= "table" then
-				return { [1] = t }
-			end
+		local rEnv = engineEnvironmentManager:GetStandardEnvironment(script)
 
-			local c = {}
+		rEnv["print"] = function(...)
+			self:PrintInformation(...)
+		end
 
-			for i, v in t do
-				if typeof(v) == "table" then
-					c[i] = deepClone(v)
-				else
-					c[i] = v
-				end
-			end
+		rEnv["warn"] = function(...)
+			self:PrintWarning(...)
+		end
 
-			return c
+		rEnv["error"] = function(...)
+			self:PrintError(...)
 		end
-		__clean = deepClone(getfenv(f))
-		local nEnv = deepClone(__clean)
 
-		-- Replace print, warn and error with proxies.
+		rEnv["critical"] = function(...)
+			self:PrintCritical(...)
+		end
 
-		nEnv.print = function(msg)
-			return self:PrintInformation(msg)
-		end
-		nEnv.warn = function(msg)
-			return self:PrintWarning(msg)
-		end
-		nEnv.error = function(msg)
-			return self:PrintError(msg)
-		end
-		nEnv.critical = function(msg)
-			return self:PrintCritical(msg)
-		end
-		setfenv(f, nEnv)
+		setfenv(f, rEnv)
 	end
 
 	--- Restores a polluted environment.
 	--- @param self Logger
 	function _self:RestoreEnvironment(f: number | () -> ())
-		setfenv(f, __clean)
+		if typeof(f) == "number" then
+			f += 1
+		end
+		local x = getfenv(f)
+		local nEnv = x
+		for i, v in pairs(engineEnvironmentManager:GetStandardEnvironment(script)) do
+			nEnv[i] = v -- Rewrite globals to be back to env if rewritten.
+		end
+		setfenv(f, nEnv)
 	end
 
 	--- Emits a print into the console. Labeled as an Information level print.
