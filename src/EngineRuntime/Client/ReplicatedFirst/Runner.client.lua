@@ -11,9 +11,6 @@ end
 print("Waiting for scripts...")
 local scripts = game:GetService("ReplicatedFirst"):WaitForChild("Preinit")
 print("Executing pre-initialization scripts:")
-local engineShared = game:GetService("ReplicatedStorage"):WaitForChild("EngineShared")
-local engineRequire = require(engineShared:WaitForChild("EngineRequire"))
-local engineEnvironmentManager = require(engineShared:WaitForChild("EngineEnvironment"))
 
 for _, moduleScript in pairs(scripts:GetDescendants()) do
 	if moduleScript:IsA("ModuleScript") then
@@ -25,7 +22,30 @@ local initializedModules = 0
 local moduleCount = #scripts:GetChildren()
 for _, moduleScript in scripts:GetChildren() do
 	if moduleScript:IsA("ModuleScript") then
-		local m: BaseEngineModule = engineRequire.protected(moduleScript)
+		local function __run_protected_require(module: ModuleScript): BaseEngineModule
+			if typeof(module) ~= "Instance" or not module:IsA("ModuleScript") then
+				(critical or error)(string.format("Cannot require %s as it is not a ModuleScript.", tostring(module)))
+			end
+
+			local success, ret: string | BaseEngineModule = pcall(function()
+				return require(module)
+			end)
+
+			if not success then
+				(critical and error or warn)(
+					string.format(
+						"Failed to require module %s! Error received: '%s'",
+						module:GetFullName(),
+						tostring(ret)
+					)
+				)
+				return nil
+			end
+
+			return ret
+		end
+
+		local m = __run_protected_require(moduleScript)
 
 		if typeof(m) ~= "table" or typeof(m.ModuleName) ~= "string" or typeof(m.Initialize) ~= "function" then
 			warn("Cowardly refusing to initialize a module that does not comply with the BaseEngineModule definition!")
@@ -41,7 +61,7 @@ for _, moduleScript in scripts:GetChildren() do
 		)
 
 		local _, msg = pcall(function()
-			m:Initialize(engineEnvironmentManager) -- Env table cannot be modified either way; it is frozen.
+			m:Initialize(nil)
 		end)
 
 		if msg then
