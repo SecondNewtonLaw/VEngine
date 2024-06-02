@@ -9,9 +9,15 @@ function moduleConstructor.new()
 	--- @type string
 	module.ModuleName = "EngineModule"
 
+	--- The load order of the module.
+	--- The higher, the earlier it will load.
+	--- @type number
+	module.LoadOrder = 0
+
 	--- Runs the initialization routine for an EngineModule.
-	--- @param _ EngineEnvironmentManager The environment manager for VEngine.
-	function module:Initialize(_: EngineEnvironmentManager)
+	--- @param envManager EngineEnvironmentManager The environment manager for VEngine.
+	function module:Initialize(envManager: EngineEnvironmentManager)
+		local _ = envManager
 		print(
 			"This has not been overriden by you, the developer. You should override it to give your module functionality!"
 		)

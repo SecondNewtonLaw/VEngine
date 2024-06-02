@@ -4,12 +4,6 @@
     "$className": "DataModel",
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
-      "EngineShared": {
-        "$path": "src/EngineRuntime/Shared"
-      },
-      "ClientCore": {
-        "$path": "src/Game/Client/"
-      },
       "ThirdPartyShared": {
         "$path": "Packages"
       }
@@ -38,7 +32,16 @@
     "ReplicatedFirst": {
       "$className": "ReplicatedFirst",
       "EngineRunner": {
-        "$path": "src/EngineRuntime/Client/ReplicatedFirst"
+        "$path": "src/EngineRuntime/ReplicatedFirst"
+      },
+      "EngineShared": {
+        "$path": "src/EngineRuntime/Shared"
+      },
+      "Shared": {
+        "$path": "src/Game/Shared"
+      },
+      "ClientCore": {
+        "$path": "src/Game/Client"
       },
       "Preinit": {
         "$path": "src/Game/ReplicatedFirst"

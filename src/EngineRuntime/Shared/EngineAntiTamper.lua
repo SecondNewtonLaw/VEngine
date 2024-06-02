@@ -1,5 +1,5 @@
 local module =
-	require(game:GetService("ReplicatedStorage"):WaitForChild("EngineShared"):WaitForChild("EngineModule")).new()
+	require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineModule")).new()
 
 local xorKey = os.time() + os.clock() / task.wait(0.03)
 
@@ -26,8 +26,7 @@ local moduleData = setmetatable({}, {
 })
 
 function module:Initialize(engineEnvironmentManager: EngineEnvironmentManager)
-	local LoggerModule =
-		require(game:GetService("ReplicatedStorage"):WaitForChild("EngineShared"):WaitForChild("Logger"))
+	local LoggerModule = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("Logger"))
 
 	moduleData["Time"] = os.time()
 	print(__moduleData)
@@ -37,7 +36,7 @@ function module:Initialize(engineEnvironmentManager: EngineEnvironmentManager)
 	print(moduleData)
 	print(moduleData["Time"]) -- Xorstring test.
 
-	moduleData["__scannerThreads"] = {}	-- TODO: Implement helper function to emit Xorstring metatables, improve detections other than weaktables (Our beloved!)
+	moduleData["__scannerThreads"] = {} -- TODO: Implement helper function to emit Xorstring metatables, improve detections other than weaktables (Our beloved!)
 
 	moduleData["__scannerThreads"]["__coregui"] = task.defer(function()
 		local a = setmetatable({ newproxy(true), game.CoreGui }, { __mode = "v" })
@@ -52,13 +51,13 @@ function module:Initialize(engineEnvironmentManager: EngineEnvironmentManager)
 	end)
 
 	moduleData["__scannerThreads"]["__virtualInputManager"] = task.defer(function()
-		local a = setmetatable({ newproxy(true), game.CoreGui }, { __mode = "v" })
+		local a = setmetatable({ newproxy(true), game.VirtualInputManager }, { __mode = "v" })
 
 		while task.wait() do
 			if a[1] and not a[2] or not a[1] and a[2] then
 				debug.info(1, "f")() -- Praise democracy!
 			elseif not a[1] and not a[2] then
-				a = setmetatable({ newproxy(true), game.CoreGui }, { __mode = "v" })
+				a = setmetatable({ newproxy(true), game.VirtualInputManager }, { __mode = "v" })
 			end
 		end
 	end)

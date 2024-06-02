@@ -4,7 +4,7 @@
 
 local RunService = game:GetService("RunService")
 local engineEnvironmentManager =
-	require(game:GetService("ReplicatedStorage"):WaitForChild("EngineShared"):WaitForChild("EngineEnvironment"))
+	require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineEnvironment"))
 local logger = {}
 
 --- Construct a Logger.
@@ -54,7 +54,7 @@ function logger.new(loggerName: string, studioOnly: boolean, stackTraceDepth: nu
 			self:PrintCritical(...)
 		end
 
-		setfenv(f, rEnv)
+		setfenv(typeof(f) == "number" and f + 1 or f, rEnv)
 	end
 
 	--- Restores a polluted environment.

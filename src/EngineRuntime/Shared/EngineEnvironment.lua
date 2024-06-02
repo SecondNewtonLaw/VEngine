@@ -1,26 +1,55 @@
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 --- @class EngineEnvironmentManager
 local envManager = {}
+local loadedModules = {}
 
 print("[VEngine::EngineEnvironmentManager] Initializing Environment Manager...")
 
-local EngineUtilities = require(ReplicatedStorage:WaitForChild("EngineShared"):WaitForChild("EngineUtilities"))
+local EngineUtilities = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineUtilities"))
 
+function envManager:PushEngineModule(engineModule: BaseEngineModule)
+	loadedModules[engineModule.ModuleName] = engineModule
+end
+
+function envManager:GetEngineModule(moduleName: string)
+	return loadedModules[moduleName]
+end
+
+function envManager:GetLoadedModules()
+	-- Sort by load priority
+	table.sort(loadedModules, function(s: BaseEngineModule, o: BaseEngineModule)
+		return s.LoadOrder < o.LoadOrder
+	end)
+
+	return loadedModules
+end
 --
 function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 	return {
+		-- Deprecated globals are not included, you may choose to add them at your own volition.
 		-- Roblox Globals -> https://create.roblox.com/docs/reference/engine/globals/RobloxGlobals
 		Enum = Enum,
 		game = game,
 		workspace = workspace,
 		script = runningOn,
 
-		require = require,
+		require = function(...)
+			print(
+				string.format(
+					"[VEngine::Hooks::require] Requiring Instance -> '%s' | Issuer: '%s'",
+					typeof(select(1, ...)) == "Instance" and select(1, ...):GetFullName(),
+					RunService:IsClient() and "Roblox Client" or "Roblox Server"
+				)
+			)
+			return require(...)
+		end,
+		tick = tick,
 		time = time,
 		typeof = typeof,
 		warn = warn,
 		UserSettings = UserSettings,
-		elapsedTime = elapsedTime,
 		gcinfo = gcinfo,
 
 		bit32 = bit32,
@@ -52,7 +81,6 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 		print = print,
 		error = error,
 
-		collectgarbage = collectgarbage, -- This is not really going to invoke the GC.
 		select = select,
 
 		getmetatable = getmetatable,
@@ -71,6 +99,32 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 		unpack = unpack,
 		_G = _G,
 		_VERSION = _VERSION,
+
+		-- Additional API tables.
+		TweenInfo = TweenInfo,
+
+		Ray = Ray,
+		RaycastParams = RaycastParams,
+
+		RotationCurveKey = RotationCurveKey,
+
+		CFrame = CFrame,
+
+		Vector3 = Vector3,
+		Vector3int16 = Vector3int16,
+
+		Vector2 = Vector2,
+		Vector2int16 = Vector2int16,
+
+		UDim = UDim,
+		UDim2 = UDim2,
+
+		Color3 = Color3,
+		ColorSequence = ColorSequence,
+		ColorSequenceKeypoint = ColorSequenceKeypoint,
+		BrickColor = BrickColor,
+
+		Font = Font,
 	}
 end
 
@@ -107,6 +161,9 @@ local function ConstructEngineEnvironment(baseEnvironment: table)
 			return { Name = eventName, Unreliable = unreliable }
 		end,
 	}
+
+	--- RedSharedEvents, abstracted into an Engine construct.
+	nEnv["EngineRemoteEvent"] = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineRemoteEvent"))
 
 	return nEnv
 end
