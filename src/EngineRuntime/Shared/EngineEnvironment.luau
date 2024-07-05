@@ -7,9 +7,14 @@ local loadedModules = {}
 
 print("[VEngine::EngineEnvironmentManager] Initializing Environment Manager...")
 
+local Types = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineTypes"))
 local EngineUtilities = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineUtilities"))
 
-function envManager:PushEngineModule(engineModule: BaseEngineModule)
+function envManager.GetRealDataModel()
+	return ReplicatedStorage.Parent or ReplicatedFirst.Parent
+end
+
+function envManager:PushEngineModule(engineModule: Types.BaseEngineModule)
 	loadedModules[engineModule.ModuleName] = engineModule
 end
 
@@ -19,7 +24,7 @@ end
 
 function envManager:GetLoadedModules()
 	-- Sort by load priority
-	table.sort(loadedModules, function(s: BaseEngineModule, o: BaseEngineModule)
+	table.sort(loadedModules, function(s: Types.BaseEngineModule, o: Types.BaseEngineModule)
 		return s.LoadOrder < o.LoadOrder
 	end)
 
@@ -27,22 +32,53 @@ function envManager:GetLoadedModules()
 end
 --
 function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
-	return {
-		-- Deprecated globals are not included, you may choose to add them at your own volition.
+	local isStudio = RunService:IsStudio()
+	local env
+	env = {
 		-- Roblox Globals -> https://create.roblox.com/docs/reference/engine/globals/RobloxGlobals
 		Enum = Enum,
-		game = game,
+		game = setmetatable({}, {
+			__index = function(_, idx)
+				if typeof(game[idx]) == "function" then
+					print(
+						string.format(
+							"[VEngine::Hooks::DataModel] __namecall -> %s; Emitting thunk for handling __namecall operations!",
+							tostring(idx)
+						)
+					)
+					return function(...)
+						local nArgs = {}
+						for i, v in { ... } do
+							if i == 1 then
+								continue
+							end
+							table.insert(nArgs, v)
+						end
+						return (game[idx] :: any)(game, unpack(nArgs))
+					end
+				end
+
+				return game[idx]
+			end,
+			__newindex = game,
+			__tostring = game,
+
+			__metatable = getmetatable(game :: any),
+		}),
 		workspace = workspace,
 		script = runningOn,
 
 		require = function(...)
-			print(
-				string.format(
-					"[VEngine::Hooks::require] Requiring Instance -> '%s' | Issuer: '%s'",
-					typeof(select(1, ...)) == "Instance" and select(1, ...):GetFullName(),
-					RunService:IsClient() and "Roblox Client" or "Roblox Server"
+			env.task.synchronize() -- Use hooked task.synchronize
+			if isStudio then
+				print(
+					string.format(
+						"[VEngine::Hooks::require] Requiring Instance -> '%s' | Issuer: '%s'",
+						typeof(select(1, ...)) == "Instance" and select(1, ...):GetFullName(),
+						RunService:IsClient() and "Roblox Client" or "Roblox Server"
+					)
 				)
-			)
+			end
 			return require(...)
 		end,
 		tick = tick,
@@ -50,12 +86,55 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 		typeof = typeof,
 		warn = warn,
 		UserSettings = UserSettings,
+		elapsedTime = elapsedTime,
 		gcinfo = gcinfo,
 
 		bit32 = bit32,
 		debug = debug,
 		math = math,
-		task = task,
+		SharedTable = SharedTable,
+		OverlapParams = OverlapParams,
+		task = {
+			cancel = task.cancel,
+			spawn = function(f: thread | () -> (), ...)
+				local t = task.spawn(f, ...)
+				if isStudio then
+					print(
+						string.format(
+							"[VEngine::Hook::task_spawn] Initializing new thread from '%s'. Running @ '%s' ",
+							tostring(f),
+							tostring(t)
+						)
+					)
+				end
+				return t
+			end,
+			defer = task.defer,
+			wait = task.wait,
+			delay = task.delay,
+			desynchronize = function()
+				if isStudio then
+					print(
+						string.format(
+							"[VEngine::Hooks::task_desynchronize] Desynchronizing '%s' into the next parallel cycle.",
+							tostring(coroutine.running())
+						)
+					)
+				end
+				task.desynchronize()
+			end,
+			synchronize = function()
+				if isStudio then
+					print(
+						string.format(
+							"[VEngine::Hooks::task_synchronize] Synchronizing '%s' into the next serial cycle.",
+							tostring(coroutine.running())
+						)
+					)
+				end
+				task.synchronize()
+			end,
+		},
 		table = table,
 		os = os,
 		string = string,
@@ -81,6 +160,7 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 		print = print,
 		error = error,
 
+		collectgarbage = collectgarbage, -- This is not really going to invoke the GC.
 		select = select,
 
 		getmetatable = getmetatable,
@@ -97,7 +177,8 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 		assert = assert,
 
 		unpack = unpack,
-		_G = _G,
+		-- Deprecated, do not use, this is a sin.
+		-- _G = _G,
 		_VERSION = _VERSION,
 
 		-- Additional API tables.
@@ -120,17 +201,21 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 		UDim2 = UDim2,
 
 		Color3 = Color3,
+
 		ColorSequence = ColorSequence,
 		ColorSequenceKeypoint = ColorSequenceKeypoint,
 		BrickColor = BrickColor,
 
 		Font = Font,
+		Random = Random,
 	}
+
+	return env
 end
 
-local function ConstructEngineEnvironment(baseEnvironment: table)
+local function ConstructEngineEnvironment(baseEnvironment: {}): Types.VEngineEnv
 	--- Table containing all the environment of VEngine.
-	local nEnv = EngineUtilities.DeepClone(baseEnvironment)
+	local nEnv = EngineUtilities.DeepClone(baseEnvironment) :: Types.RBXEnvBase
 
 	-- Copy the globals of the Standard environment into nEnv, they aren't pushed by default.
 	for i, v in pairs(envManager:GetStandardEnvironment(script)) do
@@ -140,13 +225,15 @@ local function ConstructEngineEnvironment(baseEnvironment: table)
 	--- The Red networking library.
 	nEnv["RedNetworking"] = require(ReplicatedStorage:WaitForChild("ThirdPartyShared"):WaitForChild("Red"))
 
+	nEnv["RedSignal"] = require(ReplicatedStorage:WaitForChild("ThirdPartyShared"):WaitForChild("signal"))
+
 	--- Factory for EventOptions (Part of Red Networking)
 	nEnv["EventOptions"] = {
 		---	Construct a EventOptions structure.
 		--- @param eventName string The name of the event.
 		--- @param unreliable boolean Whether or not its mode is set to unreliable.
 		--- @return table eventOptions Instance of EventOptions
-		new = function(eventName: string, unreliable: boolean?): EventOptions
+		new = function(eventName: string, unreliable: boolean?): Types.EventOptions
 			return { Name = eventName, Unreliable = unreliable }
 		end,
 	}
@@ -157,26 +244,27 @@ local function ConstructEngineEnvironment(baseEnvironment: table)
 		--- @param eventName string The name of the event.
 		--- @param unreliable boolean Whether or not its mode is set to unreliable.
 		--- @return table sharedEventOptions Instance of SharedEventOptions
-		new = function(eventName: string, unreliable: boolean?): SharedEventOptions
+		new = function(eventName: string, unreliable: boolean?): Types.SharedEventOptions
 			return { Name = eventName, Unreliable = unreliable }
 		end,
 	}
 
 	--- RedSharedEvents, abstracted into an Engine construct.
-	nEnv["EngineRemoteEvent"] = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineRemoteEvent"))
+	nEnv["EngineSharedReplicatedEvent"] =
+		require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineSharedReplicatedEvent"))
 
 	return nEnv
 end
 
-function envManager.GetEngineGlobals()
-	return table.freeze(ConstructEngineEnvironment({}))
+function envManager.GetEngineGlobals(): Types.VEngineEnv
+	return (table.freeze(ConstructEngineEnvironment({})) :: any) :: Types.VEngineEnv
 end
 
 function envManager.ModifyEnvironment(func: () -> ())
-	if typeof(func) == "number" then
+	if typeof(func) == "number" and func ~= 0 then
 		func += 1 -- Assume the given number was the level of the caller. Increase by one to access the callers' instead of ours.
 	end
 	setfenv(func, ConstructEngineEnvironment(getfenv(func)))
 end
 
-return table.freeze(envManager)
+return (table.freeze(envManager) :: any) :: Types.EngineEnvironmentManager

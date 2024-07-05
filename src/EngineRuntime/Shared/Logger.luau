@@ -5,6 +5,8 @@
 local RunService = game:GetService("RunService")
 local engineEnvironmentManager =
 	require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineEnvironment"))
+local Types = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineTypes"))
+
 local logger = {}
 
 --- Construct a Logger.
@@ -12,13 +14,13 @@ local logger = {}
 --- @param studioOnly boolean If true, the logs will only show up on Roblox Studio.
 --- @param stackTraceDepth number When printing a critical error, this will be the amount of stack trace printed. Optional, if nil, the entire stack trace will be emitted..
 --- @return Logger logger An instance of af a logger, ready to be used.
-function logger.new(loggerName: string, studioOnly: boolean, stackTraceDepth: number?): Logger
+function logger.new(loggerName: string, studioOnly: boolean, stackTraceDepth: number?): Types.Logger
 	if stackTraceDepth == nil then
 		stackTraceDepth = 999
 	end
 
 	if typeof(loggerName) ~= "string" then
-		(critical or error)("[CRITICAL/VEngine::Logger::new] Cannot initialize. Logger name is not a string!")
+		error("[CRITICAL/VEngine::Logger::new] Cannot initialize. Logger name is not a string!")
 	end
 
 	--- @class Logger
@@ -46,21 +48,21 @@ function logger.new(loggerName: string, studioOnly: boolean, stackTraceDepth: nu
 			self:PrintWarning(...)
 		end
 
-		rEnv["error"] = function(...)
+		rEnv["lighterror"] = function(...)
 			self:PrintError(...)
 		end
 
-		rEnv["critical"] = function(...)
+		rEnv["error"] = function(...)
 			self:PrintCritical(...)
 		end
 
-		setfenv(typeof(f) == "number" and f + 1 or f, rEnv)
+		setfenv(typeof(f) == "number" and f ~= 0 and f + 1 or f, rEnv)
 	end
 
 	--- Restores a polluted environment.
 	--- @param self Logger
 	function _self:RestoreEnvironment(f: number | () -> ())
-		if typeof(f) == "number" then
+		if typeof(f) == "number" and f ~= 0 then
 			f += 1
 		end
 		local x = getfenv(f)
@@ -73,31 +75,31 @@ function logger.new(loggerName: string, studioOnly: boolean, stackTraceDepth: nu
 
 	--- Emits a print into the console. Labeled as an Information level print.
 	--- @param message string The message to be printed.
-	function _self:PrintInformation(message: string)
+	function _self:PrintInformation(message: string, ...)
 		if self.StudioOnly and not RunService:IsStudio() then
 			return
 		end
-		print(("[INFO/%s] %s"):format(self.LoggerName, tostring(message)))
+		print(("[INFO/%s] %s "):format(self.LoggerName, tostring(message)), ...)
 	end
 
 	--- Emits a print into the console. Labeled as an Warning level print.
 	--- @param self Logger
 	--- @param message string The message to be printed.
-	function _self:PrintWarning(message: string)
+	function _self:PrintWarning(message: string, ...)
 		if self.StudioOnly and not RunService:IsStudio() then
 			return
 		end
-		print(("[WARN/%s] %s"):format(self.LoggerName, tostring(message)))
+		warn(("[WARN/%s] %s"):format(self.LoggerName, tostring(message)), ...)
 	end
 
 	--- Emits a warning into the console. Labeled as an Error level print.
 	--- @param self Logger
 	--- @param message string The message to be warned.
-	function _self:PrintError(message: string)
+	function _self:PrintError(message: string, ...)
 		if self.StudioOnly and not RunService:IsStudio() then
 			return
 		end
-		warn(("[ERROR/%s] %s"):format(self.LoggerName, tostring(message)))
+		warn(("[ERROR/%s] %s"):format(self.LoggerName, tostring(message)), ...)
 	end
 
 	--- Emits an error into the console. Labeled as an Critical level print.

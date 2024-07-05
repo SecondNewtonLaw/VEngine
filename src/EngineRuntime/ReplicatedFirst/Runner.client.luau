@@ -29,17 +29,17 @@ end
 
 for _, moduleScript in scripts:GetDescendants() do
 	if moduleScript:IsA("ModuleScript") then
-		local function __run_protected_require(module: ModuleScript): BaseEngineModule
+		local function __run_protected_require(module: ModuleScript)
 			if typeof(module) ~= "Instance" or not module:IsA("ModuleScript") then
-				(critical or error)(string.format("Cannot require %s as it is not a ModuleScript.", tostring(module)))
+				error(string.format("Cannot require %s as it is not a ModuleScript.", tostring(module)))
 			end
 
-			local success, ret: string | BaseEngineModule = pcall(function()
+			local success, ret: any = pcall(function()
 				return require(module)
 			end)
 
 			if not success then
-				(critical and error or warn)(
+				error(
 					string.format(
 						"Failed to require module %s! Error received: '%s'",
 						module:GetFullName(),
@@ -67,29 +67,33 @@ for _, moduleScript in scripts:GetDescendants() do
 			)
 		)
 
-		local _, msg
 		task.spawn(function()
-			_, msg = pcall(function()
+			local _, msg = pcall(function()
 				debug.setmemorycategory("ReplicatedFirst/" .. m.ModuleName)
+				task.synchronize()
 				m:Initialize(nil)
+				task.synchronize()
+				debug.resetmemorycategory()
 			end)
-		end)
 
-		if msg then
-			warn(
-				string.format(
-					"Failed to initialize VEngine module '%s' (Module: ReplicatedFirst/Game/%s);\nError: %s",
-					m.ModuleName,
-					moduleScript.Name,
-					msg
+			if msg then
+				warn(
+					string.format(
+						"Failed to initialize VEngine module '%s' (Module: ReplicatedFirst/Game/%s);\nError: %s",
+						m.ModuleName,
+						moduleScript.Name,
+						msg
+					)
 				)
-			)
-		else
-			initializedModules += 1
-		end
+			else
+				initializedModules += 1
+			end
+		end)
 	end
 end
 
-if moduleCount ~= initializedModules then
-	warn("Some engine modules failed to initialize correctly...")
+while moduleCount ~= initializedModules do
+	task.wait()
 end
+
+game:GetService("ReplicatedFirst"):SetAttribute("Loaded__Preload", true)

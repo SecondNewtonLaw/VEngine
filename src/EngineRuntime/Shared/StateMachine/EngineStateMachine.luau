@@ -2,12 +2,14 @@
 	Copyright 2023 Dottik - All Rights Reserved
 
 	This script is a module of the State Machine.
+
 	This module represents the main runtime of the State Machine.
 ]]
 
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 
 local LoggerModule = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("Logger"))
+local Types = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineTypes"))
 local EngineUtilities = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineUtilities"))
 
 local module = {}
@@ -17,7 +19,11 @@ local module = {}
 --- @param states table The
 --- @param enableDebugPrints boolean Debug prints
 --- @return StateMachine createdStateMachine The state machine that was created with the given parameters.
-function module.CreateStateMachine(machineName: string, states: { State }, enableDebugPrints: boolean)
+function module.CreateStateMachine(
+	machineName: string,
+	states: { Types.State },
+	enableDebugPrints: boolean
+): Types.StateMachine
 	--- @class StateMachine
 	local __self = {
 		--- The valid states of the state machine.
@@ -40,7 +46,7 @@ function module.CreateStateMachine(machineName: string, states: { State }, enabl
 		--- The thread that executs the State Machine.
 		MachineThread = nil,
 		--- Simple getter to the Current State.
-		GetCurrentState = function(self): State?
+		GetCurrentState = function(self): Types.State
 			return self.StateMachine_CurrentState
 		end,
 	}
@@ -73,7 +79,7 @@ function module.CreateStateMachine(machineName: string, states: { State }, enabl
 			__self.Ready:Fire()
 
 			while task.wait() do -- Main Loop.
-				local currentState: State = internalState:GetCurrentState()
+				local currentState = internalState:GetCurrentState()
 				if currentState then
 					if not table.find(__self.StateMachineStates, internalState:GetCurrentState()) then
 						LoggerInstance:PrintCritical(
@@ -133,7 +139,7 @@ function module.CreateStateMachine(machineName: string, states: { State }, enabl
 
 	---	Modifies the internal state of the state machine externally.
 	--- @param newState table The new state you want to set the state machine to have.
-	function __self:ModifyMemory(newState: table)
+	function __self:ModifyMemory(newState: {})
 		local oldState = internalState.StateMachineMemory
 		internalState.StateMachineMemory = EngineUtilities.DeepClone(newState)
 		return oldState
@@ -156,7 +162,7 @@ function module.CreateStateMachine(machineName: string, states: { State }, enabl
 		__self.Ready:Destroy()
 	end
 
-	return setmetatable(__self, {})
+	return __self :: Types.StateMachine
 end
 
 return module

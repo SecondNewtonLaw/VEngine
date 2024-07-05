@@ -18,8 +18,9 @@ module.ValidationFailureReason = table.freeze({
 local DatastoreService = game:GetService("DataStoreService")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 
+local Types = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineTypes"))
 local LoggerModule = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("Logger"))
-local AnticheatModuleLogger = LoggerModule.new("DataStore Utilities Module", false)
+local datastoreUtilitiesModule = LoggerModule.new("DataStore Utilities Module", false)
 
 function module.BanPlayer(player: Player)
 	local bansDatastore = DatastoreService:GetDataStore("Bans")
@@ -39,26 +40,24 @@ function module.BanPlayer(player: Player)
 				success = i_success
 
 				if not success then
-					AnticheatModuleLogger:PrintError("The datastore 'SetAsync' operation has errored! --> " .. err)
-					AnticheatModuleLogger:PrintError("The operation will be retried in a second...")
+					datastoreUtilitiesModule:PrintError("The datastore 'SetAsync' operation has errored! --> " .. err)
+					datastoreUtilitiesModule:PrintError("The operation will be retried in a second...")
 					task.wait(1)
 				else
-					AnticheatModuleLogger:PrintInformation(
+					datastoreUtilitiesModule:PrintInformation(
 						"A player has been banned from the game --> " .. player.UserId
 					)
 				end
 			end
 		end
 	else
-		AnticheatModuleLogger:PrintError("The datastore 'GetAsync' operation has errored! --> " .. result)
+		datastoreUtilitiesModule:PrintError("The datastore 'GetAsync' operation has errored! --> " .. result)
 	end
 	task.wait(0.5)
 	player:Kick("You have been banned from this game.")
 end
 
 function module.IsBanned(player: Player)
-	-- TODO: Replace with new Roblox Banning API.
-
 	local bansDatastore = DatastoreService:GetDataStore("Bans")
 
 	local success, itemOrError = pcall(function(plr)
@@ -70,7 +69,7 @@ function module.IsBanned(player: Player)
 	elseif success and not itemOrError then
 		return false
 	elseif not success then
-		AnticheatModuleLogger:PrintError(
+		datastoreUtilitiesModule:PrintError(
 			("The datastore operation 'GetAsync' has failed for user %s (%d), the user has been kicked and told to Re-Join for validating them."):format(
 				player.Name,
 				player.UserId
@@ -82,13 +81,19 @@ function module.IsBanned(player: Player)
 		player:Kick("Internal Server Error. Please Re-Join")
 		return false
 	end
+
+	return false
 end
 
 --- Defines whether or not an item is valid for a datastore.
 --- @param item any The item to evaluate
 --- @param expectedType string The name of the expected type. The return of typeof(str)
 --- @param expectedLength number? The expected length of the item, defaults to 255 if not set.
-function module.IsValidForDatastore(item: any, expectedType: string, expectedLength: number?): ValidationFailureReason
+function module.IsValidForDatastore(
+	item: any,
+	expectedType: string,
+	expectedLength: number
+): Types.ValidationFailureReason
 	if not expectedLength then
 		expectedLength = 255
 	end
@@ -145,7 +150,7 @@ function module.IsValidForDatastore(item: any, expectedType: string, expectedLen
 		-- Recurse 4 tables before failing.
 		local MaxRecursionDepth = 4
 
-		local function assureClean(tab, depth: number?): ValidationFailureReason
+		local function assureClean(tab, depth: number?): Types.ValidationFailureReason
 			if not depth then
 				depth = 1
 			end
@@ -153,9 +158,9 @@ function module.IsValidForDatastore(item: any, expectedType: string, expectedLen
 				return module.ValidationFailureReason.ValidationTimeout
 			end
 
-			for index, value in tab do
+			for index: string, value: any in tab do
 				if typeof(index) == "string" then
-					local result = StringChecks(index, expectedLength)
+					local result = StringChecks(index, expectedLength, true)
 
 					if result ~= module.ValidationFailureReason.Success then
 						return result -- Something tripped in the table that made it unable to be "serialisable"
@@ -163,7 +168,7 @@ function module.IsValidForDatastore(item: any, expectedType: string, expectedLen
 				end
 
 				if typeof(value) == "string" then
-					local result = StringChecks(value, expectedLength)
+					local result = StringChecks(value, expectedLength, false)
 
 					if result ~= module.ValidationFailureReason.Success then
 						return result -- Something tripped in the table that made it unable to be "serialisable"

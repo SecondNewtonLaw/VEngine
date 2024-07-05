@@ -4,6 +4,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local RunService = game:GetService("RunService")
 
+local Types = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineTypes"))
+
 local EngineDatastoreValidation = RunService:IsServer()
 		and require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineDatastoreValidation"))
 	or {} -- Clients cannot use this module.
@@ -30,12 +32,12 @@ else
 		require(ReplicatedFirst:WaitForChild("Shared"):WaitForChild("Enums"):WaitForChild("GameKeybinds"))
 end
 
-local EngineEnvironment = EngineEnvironmentManager:GetEngineGlobals()
+local EngineEnvironment = EngineEnvironmentManager.GetEngineGlobals()
 
 local redEvents = {
 	["set"] = EngineEnvironment.RedNetworking.Function(
 		"__engine_keybind__set",
-		function(keybindEnum: EngineEnumItem, keycode: Enum.KeyCode)
+		function(keybindEnum: Types.EngineEnumItem?, keycode: Enum.KeyCode?)
 			if typeof(keybindEnum) ~= "table" then
 				logger:PrintWarning(
 					"Attempted to call __engine_keybind_set function using an invalid type as the keybindEnum! Sending nil instead."
@@ -53,7 +55,7 @@ local redEvents = {
 	),
 }
 
-function engineKeybindsModule:GetKeybind(keybindEnum: EngineEnumItem): Enum.KeyCode?
+function engineKeybindsModule:GetKeybind(keybindEnum: Types.EngineEnumItem): Enum.KeyCode?
 	local keybinds = PlayerService.LocalPlayer:WaitForChild("Keybinds")
 
 	local keybindValue = keybinds:WaitForChild(keybindEnum.Name)
@@ -71,12 +73,12 @@ function engineKeybindsModule:GetKeybind(keybindEnum: EngineEnumItem): Enum.KeyC
 	return nil -- No keycode matched.
 end
 
-function engineKeybindsModule:SetKeybind(keybindEnum: EngineEnumItem, keycode: Enum.KeyCode)
+function engineKeybindsModule:SetKeybind(keybindEnum: Types.EngineEnumItem, keycode: Enum.KeyCode)
 	local success, ret = redEvents.set:Call(keybindEnum, keycode):Await()
 
 	if not ret or not success then
-		logger:PrintCritical("// Keybind system not initialized or internal system error //");
-		(critical or error)(nil)
+		logger:PrintCritical("// Keybind system not initialized or internal system error //")
+		error(nil)
 		return
 	end
 
@@ -174,7 +176,7 @@ function engineKeybindsModule:Initialize()
 			end
 		end)
 
-		redEvents.set:SetCallback(function(player: Player, keybindEnum: EngineEnumItem, keycode: Enum.KeyCode)
+		redEvents.set:SetCallback(function(player: Player, keybindEnum: Types.EngineEnumItem, keycode: Enum.KeyCode)
 			local keybindName = keybindEnum.Name
 			local keybinds = player:FindFirstChild("Keybinds")
 

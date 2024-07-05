@@ -5,6 +5,8 @@
 
 local engineTimeSpan = {}
 
+local Types = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineTypes"))
+
 local TicksPerMillisecond = 10000
 local MillisecondsPerTick = 1.0 / TicksPerMillisecond
 
@@ -82,27 +84,27 @@ end
 --- @param scaledTicks number Scaled time
 --- @param scale number The scale used.
 --- @return EngineTimeSpan timeSpan an EngineTimeSpan object.
-function engineTimeSpan.fromScaled(scaledTicks: number, scale: number): EngineTimeSpan
+function engineTimeSpan.fromScaled(scaledTicks: number, scale: number): Types.EngineTimeSpan
 	return engineTimeSpan.new((scaledTicks * scale + (scaledTicks >= 0 and 0.5 or -0.5)) * TicksPerMillisecond)
 end
 
-function engineTimeSpan.fromMilliseconds(milliseconds: number): EngineTimeSpan
+function engineTimeSpan.fromMilliseconds(milliseconds: number): Types.EngineTimeSpan
 	return engineTimeSpan.fromScaled(milliseconds, 1)
 end
 
-function engineTimeSpan.fromSeconds(seconds: number): EngineTimeSpan
+function engineTimeSpan.fromSeconds(seconds: number): Types.EngineTimeSpan
 	return engineTimeSpan.fromScaled(seconds, MillisPerSecond)
 end
 
-function engineTimeSpan.fromMinutes(minutes: number): EngineTimeSpan
+function engineTimeSpan.fromMinutes(minutes: number): Types.EngineTimeSpan
 	return engineTimeSpan.fromScaled(minutes, MillisPerMinute)
 end
 
-function engineTimeSpan.fromHours(hours: number): EngineTimeSpan
+function engineTimeSpan.fromHours(hours: number): Types.EngineTimeSpan
 	return engineTimeSpan.fromScaled(hours, MillisPerHour)
 end
 
-function engineTimeSpan.fromDays(days: number): EngineTimeSpan
+function engineTimeSpan.fromDays(days: number): Types.EngineTimeSpan
 	return engineTimeSpan.fromScaled(days, MillisPerDay)
 end
 
@@ -112,7 +114,7 @@ function engineTimeSpan.fromTime(
 	minutes: number,
 	seconds: number,
 	milliseconds: number
-): EngineTimeSpan
+): Types.EngineTimeSpan
 	local totalMs = -- ToMs()!
 		(
 			(

@@ -5,9 +5,11 @@
 	This module aims to represent a possible state on a state machine.
 ]]
 
-local module = {}
+local State = {}
 
-function module.new(stateName: string)
+local Types = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineTypes"))
+
+function State.new(stateName: string): Types.State
 	--- @class State
 	local self = {
 		--- The name of the state.
@@ -16,13 +18,15 @@ function module.new(stateName: string)
 		--- @param LoggerInstance Logger The logger instance associated with this State's currently executing state machine.
 		--- @param stateMachineMemory table A snapshot of the memory of the State Machine executing this state.
 		--- @return State nextState The next state; If nil the state machine should stop.
-		ExecuteState = function(LoggerInstance: Logger, stateMachineMemory: table): State?
+		ExecuteState = function(LoggerInstance: Types.Logger, stateMachineMemory: {}): Types.State?
 			local _ = LoggerInstance
 			local _ = stateMachineMemory
 			return nil
 		end,
 	}
 
-	return self
+	return self :: Types.State
 end
-return module
+
+
+return State

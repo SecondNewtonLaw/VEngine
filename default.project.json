@@ -11,7 +11,8 @@
     "ServerScriptService": {
       "$className": "ServerScriptService",
       "EngineRuntime": {
-        "$path": "src/EngineRuntime/Server"
+        "$path": "src/EngineRuntime/Server",
+        "$className": "Actor"
       }
     },
     "ServerStorage": {
@@ -25,14 +26,20 @@
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
         "EngineRuntime": {
-          "$path": "src/EngineRuntime/Client"
+          "$path": "src/EngineRuntime/Client",
+          "$className": "Actor"
+        },
+        "ExternalScripts": {
+          "$path": "src/Game/ClientDecoupled",
+          "$className": "Folder"
         }
       }
     },
     "ReplicatedFirst": {
       "$className": "ReplicatedFirst",
       "EngineRunner": {
-        "$path": "src/EngineRuntime/ReplicatedFirst"
+        "$path": "src/EngineRuntime/ReplicatedFirst",
+        "$className": "Actor"
       },
       "EngineShared": {
         "$path": "src/EngineRuntime/Shared"

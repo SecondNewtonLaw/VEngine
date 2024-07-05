@@ -1,6 +1,6 @@
 local module = {}
 
-function module.DeepClone(t: table)
+function module.DeepClone(t: { any }): { any }
 	if typeof(t) ~= "table" then
 		return {}
 	end
