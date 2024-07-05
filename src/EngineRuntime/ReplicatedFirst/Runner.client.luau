@@ -1,3 +1,6 @@
+-- No check required due to require(module_)
+--!nocheck
+
 --[[
 	ReplicatedFirst modules are not meant to have dependencies, and therefore we won't push the modules we load into the environment,
 	nor will we use the EngineEnvironmentManager at all on this section.
@@ -34,9 +37,9 @@ for _, moduleScript in scripts:GetDescendants() do
 				error(string.format("Cannot require %s as it is not a ModuleScript.", tostring(module)))
 			end
 
-			local success, ret: any = pcall(function()
-				return require(module)
-			end)
+			local success, ret: any = pcall(function(module_: ModuleScript)
+				return require(module_)
+			end, module)
 
 			if not success then
 				error(

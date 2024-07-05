@@ -1,3 +1,5 @@
+--!strict
+
 local t = {}
 
 local Types = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineTypes"))

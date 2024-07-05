@@ -1,3 +1,5 @@
+--!strict
+
 --[[
     LoggerModule - Copyright (c) 2023 Dottik
 ]]
@@ -23,7 +25,6 @@ function logger.new(loggerName: string, studioOnly: boolean, stackTraceDepth: nu
 		error("[CRITICAL/VEngine::Logger::new] Cannot initialize. Logger name is not a string!")
 	end
 
-	--- @class Logger
 	local _self = {
 		--- The name of the logger, used when building it.
 		LoggerName = loggerName,
@@ -31,29 +32,26 @@ function logger.new(loggerName: string, studioOnly: boolean, stackTraceDepth: nu
 		StudioOnly = studioOnly,
 		--- The depth of the stack trace on errors when printing Critical error messages.
 		StackTraceDepth = stackTraceDepth,
-	}
+	} :: Types.Logger
 
-	--- Will modify the environment of the caller, replacing the standard print, warn and error functions with the ones belonging to the logger.
-	--- || Note: This is not ideal, and other scripts intending to, for example, error, will not end execution. Please consider not doing this when using foreign code not aware of this convention.
-	--- If you wish to restore the polluted environment, use Logger:RestoreEnvironment, which will restore the environment to the one you had the last time you called Logger:RestoreEnvironment.
-	--- @param self Logger
 	function _self:PolluteEnvironment(f: number | () -> ())
 		local rEnv = engineEnvironmentManager:GetStandardEnvironment(script)
 
-		rEnv["print"] = function(...)
-			self:PrintInformation(...)
+		local uSelf = self :: any
+		rEnv["print"] = function(...: any)
+			uSelf:PrintInformation(...)
 		end
 
-		rEnv["warn"] = function(...)
-			self:PrintWarning(...)
+		rEnv["warn"] = function(...: any)
+			uSelf:PrintWarning(...)
 		end
 
-		rEnv["lighterror"] = function(...)
-			self:PrintError(...)
+		rEnv["lighterror"] = function(...: any)
+			uSelf:PrintError(...)
 		end
 
-		rEnv["error"] = function(...)
-			self:PrintCritical(...)
+		rEnv["error"] = function(...: any)
+			return uSelf:PrintCritical(...)
 		end
 
 		setfenv(typeof(f) == "number" and f ~= 0 and f + 1 or f, rEnv)

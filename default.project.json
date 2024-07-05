@@ -30,7 +30,7 @@
           "$className": "Actor"
         },
         "ExternalScripts": {
-          "$path": "src/Game/ClientDecoupled",
+          "$path": "src/Game/Client_Standalone",
           "$className": "Folder"
         }
       }

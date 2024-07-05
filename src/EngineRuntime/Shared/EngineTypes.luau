@@ -7,7 +7,11 @@
 ]]
 
 export type BaseEngineModule = {
+	--- Runs before Initialize. This is where you should create instances, and initialize your Manager.
+	--- @param envManager The environment manager for VEngine.
+	PreInitialize: (self: BaseEngineModule, envManager: EngineEnvironmentManager) -> (),
 	--- Runs the initialization routine for an EngineModule.
+	--- Runs after all the Pre-Initialization is completed. This should connect game events and can require other modules
 	--- @param envManager The environment manager for VEngine.
 	Initialize: (self: BaseEngineModule, envManager: EngineEnvironmentManager) -> (),
 	--- The load order of the module.
@@ -16,6 +20,36 @@ export type BaseEngineModule = {
 	--- The name of the engine module.
 	ModuleName: string,
 }
+
+export type EngineDatastoreValidation = {
+	IsValidForDatastore: (item: any, expectedType: string, expectedLength: number) -> ValidationFailureReason,
+	ValidationFailureReason: {
+		--- The length of the given data is too long.
+		TooLong: "TooLong",
+		--- The given type is an unexpected type.
+		UnexpectedType: "UnexpectedType",
+		--- The given type may not be serialised into a Datastore object.
+		CannotBeSerialised: "CannotBeSerialised",
+		--- Input that is invalid, and unexpected, such as \255 and so.
+		InvalidInput: "InvalidInput",
+		--- The validation process has failed due to a timeout or an unexpected compliction.
+		ValidationTimeout: "ValidationTimeout",
+		--- The input is valid, and it may be given into the datastore
+		Success: "Success",
+	},
+}
+
+export type EngineSharedReplicatedEventFactory = {
+	CreateEvent: <T...>(
+		_self: EngineRemoteEventFactory,
+		eventName: string | SharedEventOptions,
+		validate: (T...) -> T...
+	) -> EngineSharedReplicatedEvent,
+
+	Validators: { [string]: <T>(...T) -> ...T },
+	EngineEnvironment: VEngineEnv,
+	EventMap: { [string]: EngineSharedReplicatedEvent },
+} & BaseEngineModule
 
 export type EngineUtilities = {
 	DeepClone: (t: { any }) -> { any },
@@ -42,6 +76,10 @@ export type Logger = {
 	PrintCritical: (self: Logger, message: string) -> (),
 	RestoreEnvironment: (self: Logger, f: () -> () | number) -> (),
 	PolluteEnvironment: (self: Logger, f: () -> () | number) -> (),
+
+	LoggerName: string,
+	StudioOnly: boolean,
+	StackTraceDepth: number,
 }
 
 export type EngineEnum = { [string]: EngineEnumItem }
@@ -52,16 +90,7 @@ export type EngineEnumItem = {
 	EnumType: EngineEnum,
 }
 
-export type ValidationFailureReason = {
-	--- The length of the given data is too long.
-	TooLong: string,
-	--- The given type is an unexpected type.
-	UnexpectedType: string,
-	--- The given type may not be serialised into a Datastore object.
-	CannotBeSerialised: string,
-	--- Input that is invalid, and unexpected, such as \255 and so.
-	InvalidInput: string,
-}
+export type ValidationFailureReason = "TooLong" | "UnexpectedType" | "CannotBeSerialised" | "InvalidInput" | "Success"
 
 export type State = {
 	--- The name of the state.
@@ -121,6 +150,9 @@ export type EngineSharedReplicatedEvent = {
 	) -> EngineEventConnection?,
 	WaitRemote: <T>(self: EngineSharedReplicatedEvent) -> ...T,
 	WaitLocal: <T>(self: EngineSharedReplicatedEvent) -> ...T,
+
+	LocalEvent: any,
+	RedRemoteEvent: any,
 }
 
 export type EngineEventConnection = {
@@ -253,6 +285,7 @@ export type EngineKeybinds = {
 }
 
 export type EngineAudioManager = {
+	SfxFolder: Folder,
 	SoundCache: { [string]: Sound },
 
 	--- Creates a sound in the EngineAudioManager. Synchronizes thread.
@@ -267,7 +300,7 @@ export type EngineAudioManager = {
 	GetSound: (self: EngineAudioManager, soundName: string) -> Sound?,
 
 	--- Obtains the container used in the game to Parent the sounds to. Synchronizes thread.
-	GetSoundContainer: () -> Folder,
+	GetSoundContainer: (self: EngineAudioManager) -> Folder,
 
 	StopAllSounds: (self: EngineAudioManager, exclusionList: { string }) -> (),
 	FadeOutAllSounds: (self: EngineAudioManager, exclusionList: { string }) -> (),

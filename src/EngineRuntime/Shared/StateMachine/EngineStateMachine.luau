@@ -1,3 +1,5 @@
+--!strict
+
 --[[
 	Copyright 2023 Dottik - All Rights Reserved
 
@@ -44,12 +46,12 @@ function module.CreateStateMachine(
 		--- A shared piece of memory between all states.
 		StateMachineMemory = {},
 		--- The thread that executs the State Machine.
-		MachineThread = nil,
+		MachineThread = nil :: thread?,
 		--- Simple getter to the Current State.
 		GetCurrentState = function(self): Types.State
 			return self.StateMachine_CurrentState
 		end,
-	}
+	} :: any
 
 	--- Starts the machine and returns the Thread that is currently running the state machine.
 	--- @return thread machineThread The machine thread
@@ -125,7 +127,7 @@ function module.CreateStateMachine(
 	---	Stops the State Machine safely.
 	--- @return boolean result If true, the State Machine was stopped correctly, else an error occurred
 	function __self:StopMachine()
-		local success, _ = pcall(task.cancel, internalState.MachineThread)
+		local success = pcall(task.cancel, internalState.MachineThread)
 		__self.OnExit:Fire(internalState.StateMachine_CurrentState)
 		internalState.MachineThread = nil
 		return success

@@ -15,80 +15,12 @@ module.ValidationFailureReason = table.freeze({
 	Success = "Success",
 })
 
-local DatastoreService = game:GetService("DataStoreService")
-local ReplicatedFirst = game:GetService("ReplicatedFirst")
-
 local Types = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineTypes"))
-local LoggerModule = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("Logger"))
-local datastoreUtilitiesModule = LoggerModule.new("DataStore Utilities Module", false)
-
-function module.BanPlayer(player: Player)
-	local bansDatastore = DatastoreService:GetDataStore("Bans")
-
-	local status, result = pcall(function(cPlayer: Player)
-		return bansDatastore:GetAsync(cPlayer.UserId)
-	end, player)
-
-	if status then
-		if not result then
-			local success = false
-			while not success and task.wait() do
-				local i_success, err = pcall(function(cPlayer: Player)
-					bansDatastore:SetAsync(cPlayer.UserId, true, { cPlayer.UserId })
-				end, player)
-
-				success = i_success
-
-				if not success then
-					datastoreUtilitiesModule:PrintError("The datastore 'SetAsync' operation has errored! --> " .. err)
-					datastoreUtilitiesModule:PrintError("The operation will be retried in a second...")
-					task.wait(1)
-				else
-					datastoreUtilitiesModule:PrintInformation(
-						"A player has been banned from the game --> " .. player.UserId
-					)
-				end
-			end
-		end
-	else
-		datastoreUtilitiesModule:PrintError("The datastore 'GetAsync' operation has errored! --> " .. result)
-	end
-	task.wait(0.5)
-	player:Kick("You have been banned from this game.")
-end
-
-function module.IsBanned(player: Player)
-	local bansDatastore = DatastoreService:GetDataStore("Bans")
-
-	local success, itemOrError = pcall(function(plr)
-		return bansDatastore:GetAsync(plr.UserId)
-	end, player)
-
-	if success and typeof(itemOrError) == "boolean" and itemOrError then
-		return true
-	elseif success and not itemOrError then
-		return false
-	elseif not success then
-		datastoreUtilitiesModule:PrintError(
-			("The datastore operation 'GetAsync' has failed for user %s (%d), the user has been kicked and told to Re-Join for validating them."):format(
-				player.Name,
-				player.UserId
-			)
-		)
-		pcall(function(player_)
-			bansDatastore:SetAsync(player_.UserId, false, { player_.UserId })
-		end, player)
-		player:Kick("Internal Server Error. Please Re-Join")
-		return false
-	end
-
-	return false
-end
 
 --- Defines whether or not an item is valid for a datastore.
---- @param item any The item to evaluate
---- @param expectedType string The name of the expected type. The return of typeof(str)
---- @param expectedLength number? The expected length of the item, defaults to 255 if not set.
+--- @param item The item to evaluate
+--- @param expectedType The name of the expected type. The return of typeof(str)
+--- @param expectedLength The expected length of the item, defaults to 255 if not set.
 function module.IsValidForDatastore(
 	item: any,
 	expectedType: string,

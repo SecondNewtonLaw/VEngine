@@ -1,3 +1,4 @@
+--!strict
 local module = {}
 
 function module.DeepClone(t: { any }): { any }

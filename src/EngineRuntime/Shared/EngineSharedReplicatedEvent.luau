@@ -1,3 +1,5 @@
+--!strict
+
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local RunService = game:GetService("RunService")
 
@@ -5,7 +7,7 @@ local EngineTypes = require(ReplicatedFirst.EngineShared.EngineTypes)
 local moduleBaseConstructor = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineModule"))
 local Types = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineTypes"))
 
-local engineEvent = moduleBaseConstructor.new()
+local engineEvent = moduleBaseConstructor.new() :: Types.EngineSharedReplicatedEventFactory
 
 local IsInitialized = false
 
@@ -20,16 +22,17 @@ end
 engineEvent.ModuleName = "Engine/Networking/EngineSharedReplicatedEventFactory"
 
 engineEvent.Validators = {
-	NoArgumentsValidator = function(a)
-		if typeof(a) ~= "nil" then
+	NoArgumentsValidator = function(...)
+		if typeof(select(1, ...)) ~= "nil" then
 			error(
 				"[VEngine::EngineSharedReplicatedEvent::Validators::NoArgumentsValidator/CRITICAL]: EngineSharedReplicatedEvent has been invoked with arguments, whilist not requiring them."
 			)
+			return ...
 		end
 
-		return a
+		return ...
 	end,
-}
+} :: { [string]: <T>(...T) -> ...T }
 
 function engineEvent.CreateEvent<T...>(
 	_self: Types.EngineRemoteEventFactory,
@@ -63,32 +66,32 @@ function engineEvent.CreateEvent<T...>(
 	) :: EngineTypes.EngineSharedReplicatedEvent
 
 	do
-		function remoteEvent:FireServer(...)
+		function remoteEvent:FireServer<T>(...)
 			ThrowIfServer()
 			self.LocalEvent:Fire(...)
 			self.RedRemoteEvent:FireServer(...)
 		end
 
-		function remoteEvent:FireClient(player: Player, ...)
+		function remoteEvent:FireClient<T>(player: Player, ...)
 			ThrowIfClient()
 			self.LocalEvent:Fire(...)
 			self.RedRemoteEvent:FireClient(player, ...)
 		end
 
-		function remoteEvent:FireAllClients(...)
+		function remoteEvent:FireAllClients<T>(...)
 			ThrowIfClient()
 			self.LocalEvent:Fire(...)
 			self.RedRemoteEvent:FireAllClients(...)
 		end
 
-		function remoteEvent:FireForClients(players: { Player }, ...)
+		function remoteEvent:FireForClients<T>(players: { Player }, ...)
 			ThrowIfClient()
 
 			self.LocalEvent:Fire(players, ...)
 			self.RedRemoteEvent:FireClients(players, ...)
 		end
 
-		function remoteEvent:WaitRemote()
+		function remoteEvent:WaitRemote<T>()
 			local nRet, invoked
 			remoteEvent:OnFire(function(...)
 				nRet = { ... }
@@ -102,7 +105,7 @@ function engineEvent.CreateEvent<T...>(
 			return table.unpack(nRet)
 		end
 
-		function remoteEvent:WaitLocal()
+		function remoteEvent:WaitLocal<T>()
 			local nRet, invoked
 			remoteEvent:OnFire(function(...)
 				nRet = { ... }
@@ -119,8 +122,8 @@ function engineEvent.CreateEvent<T...>(
 		--- Connects a callback for when the event is invoked. Can be used by both Client and Server, and will connect respectively to the correct signals.
 		--- @param callback Will execute when the event is invoked.
 		--- @return An abstraction for a connection.
-		function remoteEvent:OnFire(
-			callback: (Player, T...) -> () | (T...) -> (),
+		function remoteEvent:OnFire<T>(
+			callback: (Player, ...T) -> () | (...T) -> (),
 			once: boolean,
 			localEvent: boolean
 		): Types.EngineEventConnection? -- Engine "Clone" of RBXScriptConnection.

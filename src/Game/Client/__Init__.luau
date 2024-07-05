@@ -1,3 +1,4 @@
+--!strict
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 
 local engineKeybinds
@@ -9,14 +10,16 @@ local module = moduleBaseConstructor.new()
 
 module.ModuleName = "ClientInitialization"
 
+function module:PreInitialize(_: EngineTypes.EngineEnvironmentManager)
+	print("Pre-Initiaialization step...")
+end
+
 function module:Initialize(_: EngineTypes.EngineEnvironmentManager)
-	print("Resolving requires...")
 	engineKeybinds =
 		require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineKeybinds")) :: EngineTypes.EngineKeybinds
-	print("Requires resolved!")
 
 	print("Engine Keybinds: Initializing...")
-	engineKeybinds:Initialize()
+	engineKeybinds.Initialize()
 end
 
 return module

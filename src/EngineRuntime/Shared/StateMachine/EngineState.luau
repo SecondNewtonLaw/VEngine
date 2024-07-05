@@ -1,3 +1,5 @@
+--!strict
+
 --[[
 	Copyright 2023 Dottik - All Rights Reserved
 

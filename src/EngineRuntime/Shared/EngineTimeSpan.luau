@@ -1,3 +1,5 @@
+--!strict
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
 --[[
 	This code is based off the work done in Microsofts .NET TimeSpan implementation.
 	- https://github.com/microsoft/referencesource/blob/master/mscorlib/system/timespan.cs
@@ -5,6 +7,7 @@
 
 local engineTimeSpan = {}
 
+local EngineTypes = require(ReplicatedFirst.EngineShared.EngineTypes)
 local Types = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineTypes"))
 
 local TicksPerMillisecond = 10000
@@ -28,12 +31,11 @@ local MillisPerHour = MillisPerMinute * 60 --  3,600,000
 local MillisPerDay = MillisPerHour * 24 -- 86,400,000
 
 function engineTimeSpan.new(ticks: number)
-	--- @class EngineTimeSpan
-	local x = {
+	local x : EngineTypes.EngineTimeSpan = {
 		Ticks = ticks,
 
 		ToTicks = function(self): number
-			return self.ticks
+			return self.Ticks
 		end,
 
 		ToMilliseconds = function(self): number

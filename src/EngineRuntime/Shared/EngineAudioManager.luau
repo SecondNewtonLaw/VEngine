@@ -1,3 +1,4 @@
+--!strict
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local TweenService = game:GetService("TweenService")
 
@@ -6,7 +7,7 @@ local EngineTypes = require(game:GetService("ReplicatedFirst"):WaitForChild("Eng
 
 local moduleBaseConstructor = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineModule"))
 
-local AudioManager = moduleBaseConstructor.new() :: EngineTypes.EngineAudioManager
+local AudioManager: EngineTypes.EngineAudioManager = moduleBaseConstructor.new() :: EngineTypes.EngineAudioManager
 
 local IsInitialized = false
 
@@ -22,7 +23,7 @@ function AudioManager:Initialize(_: EngineTypes.EngineEnvironmentManager)
 	if IsInitialized then
 		return -- Avoid Re-Initialization.
 	end
-	for _, func in AudioManager do
+	for _, func in AudioManager :: { () -> () } do
 		if typeof(func) == "function" then
 			local l =
 				LoggerModule.new(string.format("VEngine::Module::Client::'%s'", AudioManager.ModuleName), false, 4)
@@ -30,11 +31,11 @@ function AudioManager:Initialize(_: EngineTypes.EngineEnvironmentManager)
 		end
 	end
 
-	self.SfxFolder = Instance.new("Folder")
-	self.SfxFolder.Parent = workspace
-	self.SfxFolder.Name = "Sound__AudioManagerManaged"
+	AudioManager.SfxFolder = Instance.new("Folder")
+	AudioManager.SfxFolder.Parent = workspace
+	AudioManager.SfxFolder.Name = "Sound__AudioManagerManaged"
 
-	self.SoundCache = {} :: { Sound }
+	AudioManager.SoundCache = {} :: { [string]: Sound }
 	IsInitialized = true
 end
 
@@ -162,7 +163,8 @@ function AudioManager:CreateSound(soundName: string, soundId: string): Sound
 
 	if self.SoundCache[soundName] or self:GetSoundContainer():FindFirstChild(soundName) then
 		if not self.SoundCache[soundName] then
-			self.SoundCache[soundName] = self:GetSoundContainer():FindFirstChild(soundName)
+			local sound = self:GetSoundContainer():FindFirstChild(soundName) :: Sound
+			self.SoundCache[soundName] = sound
 		end
 		return self.SoundCache[soundName] -- Sound already created.
 	end

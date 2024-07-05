@@ -1,16 +1,19 @@
+--!strict
+
 local DataStoreService = game:GetService("DataStoreService")
 local PlayerService = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local RunService = game:GetService("RunService")
 
+local Red = require(ReplicatedStorage.ThirdPartyShared.Red)
 local Types = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineTypes"))
 
-local EngineDatastoreValidation = RunService:IsServer()
-		and require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineDatastoreValidation"))
+local EngineDatastoreValidation: Types.EngineDatastoreValidation = RunService:IsServer()
+		and require(ReplicatedFirst.EngineShared.EngineDatastoreValidation) :: any
 	or {} -- Clients cannot use this module.
-local EngineEnvironmentManager = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineEnvironment"))
-local LoggerConstructor = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("Logger"))
+local LoggerConstructor = require(ReplicatedFirst.EngineShared.Logger)
+
 local logger = LoggerConstructor.new("EngineKeybinds", false, 5)
 
 if RunService:IsClient() and not ReplicatedStorage:GetAttribute("KeybindsSystem_Initialized") then
@@ -32,12 +35,10 @@ else
 		require(ReplicatedFirst:WaitForChild("Shared"):WaitForChild("Enums"):WaitForChild("GameKeybinds"))
 end
 
-local EngineEnvironment = EngineEnvironmentManager.GetEngineGlobals()
-
 local redEvents = {
-	["set"] = EngineEnvironment.RedNetworking.Function(
+	["set"] = Red.Function(
 		"__engine_keybind__set",
-		function(keybindEnum: Types.EngineEnumItem?, keycode: Enum.KeyCode?)
+		function(keybindEnum: any, keycode: any): (Types.EngineEnumItem?, Enum.KeyCode?)
 			if typeof(keybindEnum) ~= "table" then
 				logger:PrintWarning(
 					"Attempted to call __engine_keybind_set function using an invalid type as the keybindEnum! Sending nil instead."
@@ -51,6 +52,9 @@ local redEvents = {
 				keycode = nil
 			end
 			return keybindEnum, keycode
+		end,
+		function(...: unknown)
+			return ...
 		end
 	),
 }
@@ -94,8 +98,8 @@ function engineKeybindsModule:Initialize()
 			local extracted: { [string]: Enum.KeyCode }
 			local i = 0
 			while i < 3 do
-				local success, itemOrError = pcall(function(plr: Player)
-					return keybindDatastore:GetAsync(plr.UserId)
+				local success, itemOrError = pcall(function(player_: Player)
+					return keybindDatastore:GetAsync(tostring(player_.UserId))
 				end, player)
 
 				if success and itemOrError then
@@ -128,7 +132,9 @@ function engineKeybindsModule:Initialize()
 				local strVal = Instance.new("StringValue")
 				strVal.Parent = keyBinds
 				strVal.Name = indx
-				strVal.Value = typeof(value) == "EnumItem" and value.Name or value -- Assume it is a String
+				strVal.Value = typeof(value) == "EnumItem" and value.Name
+					or typeof(value) == "string" and value
+					or "Unknown" -- Assume it is a String
 			end
 		end)
 
@@ -138,16 +144,17 @@ function engineKeybindsModule:Initialize()
 				logger:PrintCritical(
 					"Player does not have keybinds in its Player object, was it removed by a third party script? "
 				)
+				return
 			end
 
 			-- Parse into table.
 			local keybinds_t = {}
 
 			for _, value in keybinds:GetChildren() do
-				keybinds_t[value.Name] = value.Value
+				keybinds_t[value.Name] = (value :: StringValue).Value
 			end
 
-			local validationResult = EngineDatastoreValidation.IsValidForDatastore(keybinds_t, "table")
+			local validationResult = EngineDatastoreValidation.IsValidForDatastore(keybinds_t, "table", 0)
 
 			if validationResult ~= EngineDatastoreValidation.ValidationFailureReason.Success then
 				logger:PrintCritical(
@@ -161,7 +168,7 @@ function engineKeybindsModule:Initialize()
 			local i = 0
 			while i < 3 do
 				local success, itemOrError = pcall(function(plr: Player)
-					return keybindDatastore:SetAsync(plr.UserId, keybinds_t)
+					return keybindDatastore:SetAsync(tostring(plr.UserId), keybinds_t)
 				end, player)
 
 				if success then
@@ -176,7 +183,7 @@ function engineKeybindsModule:Initialize()
 			end
 		end)
 
-		redEvents.set:SetCallback(function(player: Player, keybindEnum: Types.EngineEnumItem, keycode: Enum.KeyCode)
+		redEvents.set:SetCallback(function(player: Player, keybindEnum: any, keycode: any)
 			local keybindName = keybindEnum.Name
 			local keybinds = player:FindFirstChild("Keybinds")
 
