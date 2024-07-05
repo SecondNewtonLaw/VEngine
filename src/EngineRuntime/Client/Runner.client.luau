@@ -1,3 +1,4 @@
+--!native
 --!strict
 
 local ReplicatedFirst = game:GetService("ReplicatedFirst")

@@ -1,4 +1,5 @@
 -- No check required due to require(module_)
+--!native
 --!nocheck
 
 --[[

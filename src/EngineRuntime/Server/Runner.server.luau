@@ -1,4 +1,5 @@
 --!strict
+--!native
 
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local ServerStorage = game:GetService("ServerStorage")
