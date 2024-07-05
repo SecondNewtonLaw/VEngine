@@ -6,6 +6,8 @@
     - Luau-Lsp (Language Server w/Studio Plugin)
     - Rojo
     - Selene
+    - Aftman
+    - Wally
 
 ## Design of `VEngine`
     
@@ -24,7 +26,7 @@ Good things to use `Shared` for:
 
 Bad things to use `Shared` for:
     
-    - Entire DataStore code (This should be splitted into an Abstraction and an Implementation on the server)
+    - Entire DataStore code (This should be splitted into an Abstraction (To get data) and an Implementation on the server)
     - Entire Server-Exclusive systems, with little communication to the client.
 
 As `Shared` modules can be included in both `Server` and `Client` you must also take into account some functions should not be able to be run inside in one of both contexts. 
