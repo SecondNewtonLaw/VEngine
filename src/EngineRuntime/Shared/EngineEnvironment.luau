@@ -1,7 +1,6 @@
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
---- @class EngineEnvironmentManager
 local envManager = {}
 local loadedModules = {}
 
@@ -14,7 +13,7 @@ function envManager:PushEngineModule(engineModule: Types.BaseEngineModule)
 	loadedModules[engineModule.ModuleName] = engineModule
 end
 
-function envManager:GetEngineModule(moduleName: string)
+function envManager:GetEngineModule(moduleName: string): Types.BaseEngineModule
 	return loadedModules[moduleName]
 end
 
@@ -33,8 +32,7 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 	env = {
 		-- Roblox Globals -> https://create.roblox.com/docs/reference/engine/globals/RobloxGlobals
 		Enum = Enum,
-		game = game
-		-- Incredibly experimental. Works, but breaks some things, like when using game directly, it will give the table instead of the DataModel, breaking anything expecting DataModel on the C side of Roblox.
+		game = game		-- Incredibly experimental. Works, but breaks some things, like when using game directly, it will give the table instead of the DataModel, breaking anything expecting DataModel on the C side of Roblox.
 		--[[= setmetatable({}, {
 			__index = function(_, idx)
 				if typeof(game[idx]) == "function" then
@@ -62,7 +60,8 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 			__tostring = game,
 
 			__metatable = getmetatable(game :: any),
-		})]],
+		})]]
+,
 		workspace = workspace,
 		script = runningOn,
 

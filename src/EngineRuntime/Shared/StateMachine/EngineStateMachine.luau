@@ -38,7 +38,7 @@ function module.CreateStateMachine(
 		OnExit = Instance.new("BindableEvent"),
 		--- Fired when the State Machine has obtained its initial state and is ready.
 		Ready = Instance.new("BindableEvent"),
-	}
+	} :: Types.StateMachine
 
 	local internalState = {
 		--- The current State.

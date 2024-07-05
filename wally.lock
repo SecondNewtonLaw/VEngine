@@ -3,7 +3,7 @@
 registry = "test"
 
 [[package]]
-name = "dottik/v8engine"
+name = "dottik/vengine"
 version = "0.1.0"
 dependencies = [["Red", "red-blox/red@2.3.2"], ["signal", "red-blox/signal@2.0.2"]]
 

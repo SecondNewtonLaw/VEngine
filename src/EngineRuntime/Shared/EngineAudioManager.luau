@@ -48,12 +48,6 @@ function AudioManager:GetSound(soundName: string): Sound?
 	return self.SoundCache[soundName]
 end
 
---- Fades in a sound loaded by the AudioManager.
---- @param soundName string The name of the sound
---- @param targetVolume number The target volume, between 0 and 1.
---- @param fadeInTime number The time that the fade will take to complete
---- @param fadeEasing Enum.EasingStyle The easing style for the fade.
---- @return RBXScriptSignal signal The signal that will be fired when the Fade ends.
 function AudioManager:FadeIn(
 	soundName: string,
 	targetVolume: number,
@@ -93,11 +87,6 @@ function AudioManager:FadeIn(
 	return t.Completed
 end
 
---- Fades out a sound loaded by the AudioManager.
---- @param soundName string The name of the sound
---- @param fadeOutTime number The time that the fade will take to complete
---- @param fadeEasing Enum.EasingStyle The easing style for the fade.
---- @return RBXScriptSignal signal The signal that will be fired when the Fade ends.
 function AudioManager:FadeOut(soundName: string, fadeOutTime: number, fadeEasing: Enum.EasingStyle): RBXScriptSignal?
 	InitializeIfUninitialized()
 	if not soundName then
@@ -116,6 +105,7 @@ function AudioManager:FadeOut(soundName: string, fadeOutTime: number, fadeEasing
 		)
 		return nil
 	end
+	task.synchronize()
 
 	local sound = self.SoundCache[soundName]
 	local t = TweenService:Create(sound, TweenInfo.new(fadeOutTime, fadeEasing), {
@@ -133,12 +123,11 @@ end
 
 function AudioManager:GetSoundContainer(): Folder
 	InitializeIfUninitialized()
-	task.synchronize()
-
 	return self.SfxFolder
 end
 
 function AudioManager:StopAllSounds(exclusionList: { string })
+	task.synchronize()
 	for soundName, sound in self.SoundCache do
 		if table.find(exclusionList, soundName) then
 			continue
@@ -148,6 +137,7 @@ function AudioManager:StopAllSounds(exclusionList: { string })
 end
 
 function AudioManager:FadeOutAllSounds(exclusionList: { string })
+	task.synchronize()
 	for soundName, _ in self.SoundCache do
 		if table.find(exclusionList, soundName) then
 			continue

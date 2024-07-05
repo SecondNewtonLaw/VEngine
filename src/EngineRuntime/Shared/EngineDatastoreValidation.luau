@@ -21,8 +21,8 @@ local Types = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineSha
 --- @param item The item to evaluate
 --- @param expectedType The name of the expected type. The return of typeof(str)
 --- @param expectedLength The expected length of the item, defaults to 255 if not set.
-function module.IsValidForDatastore(
-	item: any,
+function module.IsValidForDatastore<T>(
+	item: T,
 	expectedType: string,
 	expectedLength: number
 ): Types.ValidationFailureReason
@@ -73,7 +73,7 @@ function module.IsValidForDatastore(
 	end
 
 	if expectedType == "string" then
-		local result = StringChecks(item, expectedLength, true)
+		local result = StringChecks((item :: any) :: string, expectedLength, true)
 
 		if result ~= module.ValidationFailureReason.Success then
 			return result -- Something tripped in the table that made it unable to be "serialisable"

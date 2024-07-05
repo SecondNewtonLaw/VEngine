@@ -36,7 +36,7 @@ engineEvent.Validators = {
 } :: { [string]: <T>(...T) -> ...T }
 
 function engineEvent.CreateEvent<T...>(
-	_self: Types.EngineRemoteEventFactory,
+	_self: Types.EngineSharedReplicatedEventFactory,
 	eventName: string | Types.SharedEventOptions,
 	validate: (T...) -> T...
 ): Types.EngineSharedReplicatedEvent
@@ -69,25 +69,28 @@ function engineEvent.CreateEvent<T...>(
 	do
 		function remoteEvent:FireServer<T>(...)
 			ThrowIfServer()
+			validate(...)
 			self.LocalEvent:Fire(nil, ...)
 			self.RedRemoteEvent:FireServer(...)
 		end
 
 		function remoteEvent:FireClient<T>(player: Player, ...)
 			ThrowIfClient()
+			validate(...)
 			self.LocalEvent:Fire(player, ...)
 			self.RedRemoteEvent:FireClient(player, ...)
 		end
 
 		function remoteEvent:FireAllClients<T>(...)
 			ThrowIfClient()
+			validate(...)
 			self.LocalEvent:Fire(game:GetService("Players"):GetPlayers(), ...)
 			self.RedRemoteEvent:FireAllClients(...)
 		end
 
 		function remoteEvent:FireForClients<T>(players: { Player }, ...)
 			ThrowIfClient()
-
+			validate(...)
 			self.LocalEvent:Fire(players, ...)
 			self.RedRemoteEvent:FireClients(players, ...)
 		end
