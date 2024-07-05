@@ -7,7 +7,8 @@ local EngineTypes = require(ReplicatedFirst.EngineShared.EngineTypes)
 local moduleBaseConstructor = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineModule"))
 local Types = require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineTypes"))
 
-local engineEvent = moduleBaseConstructor.new() :: Types.EngineSharedReplicatedEventFactory
+local engineEvent: Types.EngineSharedReplicatedEventFactory =
+	moduleBaseConstructor.new() :: Types.EngineSharedReplicatedEventFactory
 
 local IsInitialized = false
 
@@ -57,7 +58,7 @@ function engineEvent.CreateEvent<T...>(
 		end
 	end
 	local backingRemoteEvent = (_self.EngineEnvironment :: any).RedNetworking.SharedSignalEvent(eventName, validate)
-	local localSignal = (_self.EngineEnvironment :: any).RedSignal()
+	local localSignal = _self.EngineEnvironment.RedSignal()
 	local remoteEvent = (
 		{
 			RedRemoteEvent = backingRemoteEvent,
@@ -68,19 +69,19 @@ function engineEvent.CreateEvent<T...>(
 	do
 		function remoteEvent:FireServer<T>(...)
 			ThrowIfServer()
-			self.LocalEvent:Fire(...)
+			self.LocalEvent:Fire(nil, ...)
 			self.RedRemoteEvent:FireServer(...)
 		end
 
 		function remoteEvent:FireClient<T>(player: Player, ...)
 			ThrowIfClient()
-			self.LocalEvent:Fire(...)
+			self.LocalEvent:Fire(player, ...)
 			self.RedRemoteEvent:FireClient(player, ...)
 		end
 
 		function remoteEvent:FireAllClients<T>(...)
 			ThrowIfClient()
-			self.LocalEvent:Fire(...)
+			self.LocalEvent:Fire(game:GetService("Players"):GetPlayers(), ...)
 			self.RedRemoteEvent:FireAllClients(...)
 		end
 
@@ -127,7 +128,7 @@ function engineEvent.CreateEvent<T...>(
 			once: boolean,
 			localEvent: boolean
 		): Types.EngineEventConnection? -- Engine "Clone" of RBXScriptConnection.
-			if typeof(once) == nil or typeof(localEvent) == "nil" then
+			if typeof(once) ~= "boolean" or typeof(localEvent) ~= "boolean" then
 				error(
 					"Cannot set event fire condition: Once and LocalEvent is not set. This is not allowed, and causes issues when handling events."
 				)

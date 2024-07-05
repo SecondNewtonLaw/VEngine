@@ -1,11 +1,14 @@
+
 --[[
 	Type definitions for VEngine.
-
+	
 	Load Using:
-		local Types = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineTypes"))
-
+	local EngineTypes = require(game:GetService("ReplicatedFirst").EngineShared.EngineTypes)
+	
 ]]
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	
 export type BaseEngineModule = {
 	--- Runs before Initialize. This is where you should create instances, and initialize your Manager.
 	--- @param envManager The environment manager for VEngine.
@@ -56,6 +59,8 @@ export type EngineUtilities = {
 }
 
 export type EngineEnvironmentManager = {
+	---	Obtain the VEngine exclusive globals, such as "RedNetworking"
+	--- This modify is extended from what GetStandardEnvironment gives.
 	GetEngineGlobals: () -> VEngineEnv,
 	GetEngineModule: (self: EngineEnvironmentManager, moduleName: string) -> BaseEngineModule?,
 	GetLoadedModules: (self: EngineEnvironmentManager) -> { [string]: BaseEngineModule },
@@ -273,8 +278,25 @@ export type RBXEnvBase = {
 }
 
 export type VEngineEnv = {
-	-- TODO: Complete
-	RedSignal: () -> (),
+	---	Construct a Red Signal
+	RedSignal: typeof(require(ReplicatedStorage.ThirdPartyShared.signal)),
+	RedNetworking: typeof(require(ReplicatedStorage.ThirdPartyShared.Red)),
+	EventOptions: {
+		---	Construct a EventOptions structure.
+		--- @param eventName The name of the event.
+		--- @param unreliable Whether or not its mode is set to unreliable.
+		--- @return An Instance of EventOptions
+		new: (eventName: string, unreliable: boolean?) -> EventOptions,
+	},
+	SharedEventOptions: {
+		---	Construct a SharedEventOptions structure.
+		--- @param eventName The name of the event.
+		--- @param unreliable Whether or not its mode is set to unreliable.
+		--- @return Instance of SharedEventOptions
+		new: (eventName: string, unreliable: boolean?) -> EventOptions,
+	},
+
+	EngineSharedReplicatedEvent: EngineSharedReplicatedEventFactory,
 } & RBXEnvBase
 
 export type EngineKeybinds = {
