@@ -56,7 +56,6 @@ export type EngineUtilities = {
 }
 
 export type EngineEnvironmentManager = {
-	GetRealDataModel: () -> DataModel,
 	GetEngineGlobals: () -> VEngineEnv,
 	GetEngineModule: (self: EngineEnvironmentManager, moduleName: string) -> BaseEngineModule?,
 	GetLoadedModules: (self: EngineEnvironmentManager) -> { [string]: BaseEngineModule },
