@@ -83,7 +83,11 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 
 			if typeof(m) == "table" and typeof(m.ModuleName) == "string" then
 				error(
-					"WARNING! You are requiring a module whilist it being a VEngine module. This is not intended behaviour. You should use the EngineEnvironmentManager to get the module instead!"
+					string.format(
+						"WARNING! You are requiring a module whilist it being a VEngine module. This is not intended behaviour. You should use the EngineEnvironmentManager to get the module instead!; Caller: %s:%d",
+						debug.info(2, "sl")
+					),
+					4
 				)
 				return nil
 			end
