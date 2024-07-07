@@ -82,9 +82,10 @@ export type EngineEnvironmentManager = {
 	--- @return The VEngine environment
 	GetEngineGlobals: () -> VEngineEnv,
 	--- Gets a loaded engine module on demand
+	--- Will error if there is no module with the given name.
 	--- @paran moduleName The name of the module to look for
 	--- @return The loaded base engine module with the given name
-	GetEngineModule: (self: EngineEnvironmentManager, moduleName: string) -> BaseEngineModule?,
+	GetEngineModule: (self: EngineEnvironmentManager, moduleName: string) -> BaseEngineModule,
 	--- Gets all loaded engine module.
 	--- @return All loaded BaseEngineModule s mapped by their name.
 	GetLoadedModules: (self: EngineEnvironmentManager) -> { [string]: BaseEngineModule },
@@ -271,7 +272,7 @@ export type EngineSharedReplicatedEvent = {
 	--- @return A representation of the connection made to the event.
 	OnFire: <T>(
 		self: EngineSharedReplicatedEvent,
-		callback: (Player, ...T) -> () | (Player | { Player }, ...T) -> (),
+		callback: (...T) -> () | (Player | { Player }, ...T) -> () ,
 		once: boolean,
 		localEvent: boolean
 	) -> EngineEventConnection?,

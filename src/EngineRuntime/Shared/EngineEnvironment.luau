@@ -14,7 +14,11 @@ function envManager:PushEngineModule(engineModule: Types.BaseEngineModule)
 end
 
 function envManager:GetEngineModule(moduleName: string): Types.BaseEngineModule
-	return loadedModules[moduleName]
+	local m = loadedModules[moduleName]
+	if not m then
+		error("[VEngine::EngineEnvironmentManager/GetEngineModule] Unknown module '" .. moduleName .. "'", 4)
+	end
+	return m
 end
 
 function envManager:GetLoadedModules()
@@ -32,8 +36,7 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 	env = {
 		-- Roblox Globals -> https://create.roblox.com/docs/reference/engine/globals/RobloxGlobals
 		Enum = Enum,
-		game = game		-- Incredibly experimental. Works, but breaks some things, like when using game directly, it will give the table instead of the DataModel, breaking anything expecting DataModel on the C side of Roblox.
-		--[[= setmetatable({}, {
+		game = game --[[= setmetatable({}, {
 			__index = function(_, idx)
 				if typeof(game[idx]) == "function" then
 					print(
@@ -60,8 +63,7 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 			__tostring = game,
 
 			__metatable = getmetatable(game :: any),
-		})]]
-,
+		})]], -- Incredibly experimental. Works, but breaks some things, like when using game directly, it will give the table instead of the DataModel, breaking anything expecting DataModel on the C side of Roblox.
 		workspace = workspace,
 		script = runningOn,
 
@@ -70,9 +72,10 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 			if isStudio then
 				print(
 					string.format(
-						"[VEngine::Hooks::require] Requiring Instance -> '%s' | Issuer: '%s'",
+						"[VEngine::Hooks::require] Requiring Instance -> '%s' | Issuer: '%s'; Called By: %s:%d",
 						typeof(select(1, ...)) == "Instance" and select(1, ...):GetFullName(),
-						RunService:IsClient() and "Roblox Client" or "Roblox Server"
+						RunService:IsClient() and "Roblox Client" or "Roblox Server",
+						debug.info(2, "sl")
 					)
 				)
 			end
@@ -106,9 +109,10 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 				if isStudio then
 					print(
 						string.format(
-							"[VEngine::Hook::task_spawn] Initializing new thread from '%s'. Running @ '%s' ",
+							"[VEngine::Hook::task_spawn] Initializing new thread from '%s'. Running @ '%s'; Called By: %s:%d",
 							tostring(f),
-							tostring(t)
+							tostring(t),
+							debug.info(2, "sl")
 						)
 					)
 				end
@@ -121,8 +125,9 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 				if isStudio then
 					print(
 						string.format(
-							"[VEngine::Hooks::task_desynchronize] Desynchronizing '%s' into the next parallel cycle.",
-							tostring(coroutine.running())
+							"[VEngine::Hooks::task_desynchronize] Desynchronizing '%s' into the next parallel cycle.; Called By: %s:%d",
+							tostring(coroutine.running()),
+							debug.info(2, "sl")
 						)
 					)
 				end
@@ -132,8 +137,9 @@ function envManager:GetStandardEnvironment(runningOn: LuaSourceContainer)
 				if isStudio then
 					print(
 						string.format(
-							"[VEngine::Hooks::task_synchronize] Synchronizing '%s' into the next serial cycle.",
-							tostring(coroutine.running())
+							"[VEngine::Hooks::task_synchronize] Synchronizing '%s' into the next serial cycle.; Called By: %s:%d",
+							tostring(coroutine.running()),
+							debug.info(2, "sl")
 						)
 					)
 				end

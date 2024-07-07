@@ -1,8 +1,10 @@
 # Project place file
-/V8Engine.rbxlx
+/VEngine.rbxlx
 
 # Roblox Studio lock files
 /*.rbxlx.lock
 /*.rbxl.lock
 
 Packages/
+
+/*sourcemap.json

@@ -149,7 +149,6 @@ end
 
 function AudioManager:CreateSound(soundName: string, soundId: string): Sound
 	InitializeIfUninitialized()
-	task.synchronize()
 
 	if self.SoundCache[soundName] or self:GetSoundContainer():FindFirstChild(soundName) then
 		if not self.SoundCache[soundName] then
@@ -159,6 +158,7 @@ function AudioManager:CreateSound(soundName: string, soundId: string): Sound
 		return self.SoundCache[soundName] -- Sound already created.
 	end
 
+	task.synchronize()
 	local newSound = Instance.new("Sound")
 	newSound.Name = soundName
 	newSound.Parent = self:GetSoundContainer() -- Only one SFX Container should be ever present in-game.

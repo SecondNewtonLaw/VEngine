@@ -29,7 +29,19 @@ local engineKeybindsModule = {}
 
 if not ReplicatedFirst:WaitForChild("Shared"):WaitForChild("Enums"):WaitForChild("GameKeybinds", 5) then
 	logger:PrintCritical("Failed to load enum database! EngineKeybinds will not be initialized!")
-	return
+	return (
+		{
+			Initialize = function(_, _)
+				error("Keybinds system not initialized")
+			end,
+			SetKeybind = function(_, _, _)
+				error("Keybinds system not initialized")
+			end,
+			GetKeybind = function(_)
+				error("Keybinds system not initialized")
+			end,
+		} :: any
+	) :: Types.EngineKeybinds
 else
 	engineKeybindsModule.ExistingKeybinds =
 		require(ReplicatedFirst:WaitForChild("Shared"):WaitForChild("Enums"):WaitForChild("GameKeybinds"))
@@ -154,7 +166,7 @@ function engineKeybindsModule:Initialize()
 				keybinds_t[value.Name] = (value :: StringValue).Value
 			end
 
-			local validationResult = EngineDatastoreValidation.IsValidForDatastore(keybinds_t, "table", 0)
+			local validationResult = EngineDatastoreValidation.IsValidForDatastore(keybinds_t, "table", 255)
 
 			if validationResult ~= EngineDatastoreValidation.ValidationFailureReason.Success then
 				logger:PrintCritical(
@@ -207,4 +219,4 @@ function engineKeybindsModule:Initialize()
 end
 -- #endregion Server binds
 
-return engineKeybindsModule
+return (engineKeybindsModule :: any) :: Types.EngineKeybinds

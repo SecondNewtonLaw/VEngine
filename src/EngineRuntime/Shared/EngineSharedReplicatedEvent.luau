@@ -24,7 +24,7 @@ engineEvent.ModuleName = "Engine/Networking/EngineSharedReplicatedEventFactory"
 
 engineEvent.Validators = {
 	NoArgumentsValidator = function(...)
-		if typeof(select(1, ...)) ~= "nil" then
+		if select("#", ...) ~= 0 then
 			error(
 				"[VEngine::EngineSharedReplicatedEvent::Validators::NoArgumentsValidator/CRITICAL]: EngineSharedReplicatedEvent has been invoked with arguments, whilist not requiring them."
 			)
