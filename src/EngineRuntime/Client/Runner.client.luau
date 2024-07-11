@@ -1,6 +1,5 @@
 --!native
 --!strict
-
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 
 local Types = require(game:GetService("ReplicatedFirst"):WaitForChild("EngineShared"):WaitForChild("EngineTypes"))

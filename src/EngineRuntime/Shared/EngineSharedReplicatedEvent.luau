@@ -127,7 +127,7 @@ function engineEvent.CreateEvent<T...>(
 		--- @param callback Will execute when the event is invoked.
 		--- @return An abstraction for a connection.
 		function remoteEvent:OnFire<T>(
-			callback: (Player, ...T) -> () | (...T) -> (),
+			callback: ({ Player }, ...T) -> () | (Player, ...T) -> () | (...T) -> (),
 			once: boolean,
 			localEvent: boolean
 		): Types.EngineEventConnection? -- Engine "Clone" of RBXScriptConnection.

@@ -6,20 +6,23 @@
       "$className": "ReplicatedStorage",
       "ThirdPartyShared": {
         "$path": "Packages"
-      }
+      },
+      "$ignoreUnknownInstances": true
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",
       "EngineRuntime": {
         "$path": "src/EngineRuntime/Server",
         "$className": "Actor"
-      }
+      },
+      "$ignoreUnknownInstances": true
     },
     "ServerStorage": {
       "$className": "ServerStorage",
       "GameCore": {
         "$path": "src/Game/Server"
-      }
+      },
+      "$ignoreUnknownInstances": true
     },
     "StarterPlayer": {
       "$className": "StarterPlayer",
@@ -29,10 +32,13 @@
           "$path": "src/EngineRuntime/Client",
           "$className": "Actor"
         },
-        "ExternalScripts": {
-          "$path": "src/Game/Client_Standalone",
-          "$className": "Folder"
-        }
+        "$path": "src/Game/Client_Standalone/PlayerStandalone",
+        "$ignoreUnknownInstances": true
+      },
+      "StarterCharacterScripts": {
+        "$className": "StarterCharacterScripts",
+        "$path": "src/Game/Client_Standalone/CharacterStandalone",
+        "$ignoreUnknownInstances": true
       }
     },
     "ReplicatedFirst": {
@@ -52,12 +58,14 @@
       },
       "Preinit": {
         "$path": "src/Game/ReplicatedFirst"
-      }
+      },
+      "$ignoreUnknownInstances": true
     },
     "SoundService": {
       "$properties": {
         "RespectFilteringEnabled": true
-      }
+      },
+      "$ignoreUnknownInstances": true
     }
   }
 }

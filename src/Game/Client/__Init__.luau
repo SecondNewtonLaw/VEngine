@@ -12,14 +12,11 @@ module.ModuleName = "ClientInitialization"
 
 function module:PreInitialize(_: EngineTypes.EngineEnvironmentManager)
 	print("Pre-Initiaialization step...")
-end
-
-function module:Initialize(_: EngineTypes.EngineEnvironmentManager)
 	engineKeybinds =
 		require(ReplicatedFirst:WaitForChild("EngineShared"):WaitForChild("EngineKeybinds")) :: EngineTypes.EngineKeybinds
-
-	print("Engine Keybinds: Initializing...")
-	engineKeybinds.Initialize()
+	engineKeybinds:Initialize()
 end
+
+function module:Initialize(_: EngineTypes.EngineEnvironmentManager) end
 
 return module

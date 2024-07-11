@@ -31,7 +31,8 @@ local MillisPerHour = MillisPerMinute * 60 --  3,600,000
 local MillisPerDay = MillisPerHour * 24 -- 86,400,000
 
 function engineTimeSpan.new(ticks: number)
-	local x : EngineTypes.EngineTimeSpan = {
+	local x: EngineTypes.EngineTimeSpan = {
+		CreatedAt = tick(),
 		Ticks = ticks,
 
 		ToTicks = function(self): number

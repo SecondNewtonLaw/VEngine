@@ -1,5 +1,5 @@
 --!strict
-
+local Players = game:GetService("Players")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 
 local EngineKeybinds = require(ReplicatedFirst.EngineShared.EngineKeybinds) :: any
@@ -13,11 +13,11 @@ module.ModuleName = "ServerInitialization"
 
 function module:PreInitialize(_: EngineTypes.EngineEnvironmentManager)
 	print("Pre-init server")
+	EngineKeybinds:Initialize()
 end
 
 function module:Initialize(_: EngineTypes.EngineEnvironmentManager)
-	print("Engine Keybinds: Initializing...")
-	EngineKeybinds:Initialize()
+	print("Initializing server...")
 end
 
 return module

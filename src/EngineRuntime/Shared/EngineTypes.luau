@@ -92,7 +92,7 @@ export type EngineEnvironmentManager = {
 	--- Obtain the RBXBaseEnv.
 	--- @param runningOn The script that the environment is running on.
 	--- @return A copy of the standard roblox environment. Contains hooks.
-	GetStandardEnvironment: (self: EngineEnvironmentManager, runningOn: LuaSourceContainer) -> RBXEnvBase,
+	GetStandardEnvironment: (self: EngineEnvironmentManager, runningOn: LuaSourceContainer) -> any,
 	--- Pushes an engine module into the list of loaded modules
 	--- @param module The module to push into the loaded modules.
 	PushEngineModule: (self: EngineEnvironmentManager, module: BaseEngineModule) -> (),
@@ -211,6 +211,8 @@ export type StateMachine = {
 export type EngineTimeSpan = {
 	--- Internal varirable. Do not use.
 	Ticks: number,
+	--- Describes when the object was created. Can be used to count the time passed since its creation.
+	CreatedAt: number,
 
 	--- Gets the number of ticks representing this EngineTimeSpan instance.
 	--- @return Ticks
@@ -272,7 +274,7 @@ export type EngineSharedReplicatedEvent = {
 	--- @return A representation of the connection made to the event.
 	OnFire: <T>(
 		self: EngineSharedReplicatedEvent,
-		callback: (...T) -> () | (Player | { Player }, ...T) -> () ,
+		callback: ({ Player }, ...T) -> () | (Player, ...T) -> () | (...T) -> (),
 		once: boolean,
 		localEvent: boolean
 	) -> EngineEventConnection?,
@@ -437,11 +439,11 @@ export type VEngineEnv = {
 	},
 
 	EngineSharedReplicatedEvent: EngineSharedReplicatedEventFactory,
-} & RBXEnvBase
+} -- & RBXEnvBase
 
 export type EngineKeybinds = {
 	--- Initializes the EngineKeybinds. Only available on the server side.
-	Initialize: () -> (),
+	Initialize: (self: EngineKeybinds) -> (),
 
 	--- Set a key bind to the specified KeyCode
 	--- @param keybindEnum An engine enum that exists within the Shared/Enums/GameKeybinds.luau file
